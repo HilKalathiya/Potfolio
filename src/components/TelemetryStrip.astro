@@ -1,0 +1,23 @@
+---
+// SPEC §4 bottom telemetry strip: tokens · latency · runs today · cost/run.
+// Phase 1 has no D1 / live backend yet, so values are placeholders — shown as
+// dashes rather than invented numbers (CLAUDE.md: never invent metrics).
+// TODO(Phase 3): wire to Cloudflare D1 real-time counters.
+const stats = [
+  { label: 'tokens', value: '—' },
+  { label: 'latency', value: '—' },
+  { label: 'runs today', value: '—' },
+  { label: 'cost/run', value: '—' },
+];
+---
+<footer
+  class="fixed bottom-0 left-0 md:left-56 right-0 border-t border-border bg-surface px-4 py-2 flex gap-6 font-mono text-xs text-muted overflow-x-auto"
+>
+  {
+    stats.map((s) => (
+      <span class="whitespace-nowrap">
+        {s.label}: <span class="text-text">{s.value}</span>
+      </span>
+    ))
+  }
+</footer>

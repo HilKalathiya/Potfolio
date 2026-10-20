@@ -1,0 +1,13 @@
+node_modules
+dist
+.dev.vars
+.astro
+.env
+
+# private / never publish
+_research/
+.claude/
+*.pdf
+
+# build-time embedding cache
+scripts/.cache/

@@ -1,0 +1,707 @@
+{
+  "query": "Who is Hil Kalathiya?",
+  "nodes": [
+    "planner",
+    "retriever",
+    "tools",
+    "critic",
+    "answer"
+  ],
+  "plan": "Identity query -> retrieve resume + project facts -> cross-check tool calls -> verify claims -> compose answer.",
+  "corpusSize": 7,
+  "retrieval": [
+    {
+      "id": "resume-identity",
+      "source": "_research/resume.txt",
+      "text": "Hil Kalathiya is an AI Engineer (Fresher) working on Agentic AI, RAG, LangGraph and Multi-Agent Systems. Hil is pursuing a B.Tech in Information and Communication Technology at Pandit Deendayal Energy University (PDEU), CGPA 8.55/10, Jul 2023 - May 2027.",
+      "cos": 0.7052,
+      "bm25": 1.1123,
+      "rrf": 0.03279
+    },
+    {
+      "id": "openenv",
+      "source": "_research/readmes/open-env-nuclei.md + _research/resume.txt",
+      "text": "Hil Kalathiya co-built the OpenEnv Data Cleaning RL Agent with Chetan Gadhiya (repo is a fork; live demo Space is Chetan's). An OpenEnv environment where an agent cleans a dirty pandas table; agents include a trained PPO policy and a zero-shot LLM agent (Llama 3.1 8B through the Hugging Face router). Pydantic-typed FastAPI environment server containerized and deployed to Hugging Face Spaces.",
+      "cos": 0.2758,
+      "bm25": 0.9462,
+      "rrf": 0.03226
+    },
+    {
+      "id": "hospitalops",
+      "source": "_research/resume.txt + _research/readmes/HospitalOps-AI.md",
+      "text": "Hil Kalathiya's HospitalOps AI is a Bed Demand Forecasting & Resource Optimization project. Leakage-safe forecasting pipeline with chronological splits and true walk-forward cross-validation on two real-world hospital datasets. Benchmarked naive, seasonal-naive, ARIMA/SARIMAX and Prophet, cutting 1-day admission-forecast MAE to 3.57 from a 6.22 naive baseline. Status: running - building a human-in-the-loop LangGraph multi-agent orchestrator with RAG over hospital policies.",
+      "cos": 0.0969,
+      "bm25": 0.6768,
+      "rrf": 0.03126
+    },
+    {
+      "id": "mdt-copilot",
+      "source": "_research/readmes/MDT-AI-Copilot.md",
+      "text": "Hil Kalathiya built MDT AI Copilot, an AI analytics and agentic RAG copilot for OpenAirInterface 5G MDT, on the HNNOIX internship codebase. LangGraph create_react_agent, 5 structured tools, Chroma vector store over 4 knowledge documents embedded with Cohere embed-v4.0. Guardrails: max 8 tool calls, 4,000-character tool-output truncation. Anomaly recall >= 80% on the synthetic set.",
+      "cos": 0.1387,
+      "bm25": 0.1346,
+      "rrf": 0.03101
+    }
+  ],
+  "toolCalls": [
+    {
+      "name": "memory_search",
+      "args": {
+        "query": "Who is Hil Kalathiya?",
+        "top_k": 4
+      },
+      "result": "4 of 7 chunks"
+    },
+    {
+      "name": "fact_lookup",
+      "args": {
+        "entity": "Hil Kalathiya",
+        "fields": [
+          "education",
+          "experience",
+          "projects"
+        ]
+      },
+      "result": "resolved"
+    }
+  ],
+  "critic": {
+    "checks": [
+      {
+        "claim": "AI engineer, agentic AI / RAG / LangGraph",
+        "sourceChunk": "resume-identity",
+        "verified": true
+      },
+      {
+        "claim": "B.Tech ICT, PDEU, CGPA 8.55/10, May 2027",
+        "sourceChunk": "resume-identity",
+        "verified": true
+      },
+      {
+        "claim": "MDT AI Copilot: LangGraph, Chroma, Cohere, 8-tool-call cap",
+        "sourceChunk": "mdt-copilot",
+        "verified": true
+      },
+      {
+        "claim": "HospitalOps AI: MAE 3.57 vs 6.22 naive baseline",
+        "sourceChunk": "hospitalops",
+        "verified": true
+      },
+      {
+        "claim": "OpenEnv Data Cleaning: co-built with Chetan Gadhiya",
+        "sourceChunk": "openenv",
+        "verified": true
+      }
+    ],
+    "passed": true
+  },
+  "answer": {
+    "text": "Hil Kalathiya is an AI engineer focused on agentic AI, RAG, and multi-agent systems built with LangGraph. He is a B.Tech student in Information & Communication Technology at Pandit Deendayal Energy University (CGPA 8.55/10, graduating May 2027). His work includes MDT AI Copilot, a LangGraph agentic-RAG copilot for 5G network analytics with Chroma and Cohere retrieval, capped at 8 tool calls; HospitalOps AI, a hospital-demand forecasting pipeline that cuts admission-forecast MAE to 3.57 from a 6.22 naive baseline; and OpenEnv Data Cleaning, a reinforcement-learning environment he co-built with Chetan Gadhiya.",
+    "tokens": [
+      {
+        "id": 120912,
+        "text": "Hil"
+      },
+      {
+        "id": 22187,
+        "text": " Kal"
+      },
+      {
+        "id": 725,
+        "text": "ath"
+      },
+      {
+        "id": 19422,
+        "text": "iya"
+      },
+      {
+        "id": 382,
+        "text": " is"
+      },
+      {
+        "id": 448,
+        "text": " an"
+      },
+      {
+        "id": 20837,
+        "text": " AI"
+      },
+      {
+        "id": 36894,
+        "text": " engineer"
+      },
+      {
+        "id": 15055,
+        "text": " focused"
+      },
+      {
+        "id": 402,
+        "text": " on"
+      },
+      {
+        "id": 11793,
+        "text": " agent"
+      },
+      {
+        "id": 291,
+        "text": "ic"
+      },
+      {
+        "id": 20837,
+        "text": " AI"
+      },
+      {
+        "id": 11,
+        "text": ","
+      },
+      {
+        "id": 460,
+        "text": " R"
+      },
+      {
+        "id": 2971,
+        "text": "AG"
+      },
+      {
+        "id": 11,
+        "text": ","
+      },
+      {
+        "id": 326,
+        "text": " and"
+      },
+      {
+        "id": 12151,
+        "text": " multi"
+      },
+      {
+        "id": 97226,
+        "text": "-agent"
+      },
+      {
+        "id": 7511,
+        "text": " systems"
+      },
+      {
+        "id": 8113,
+        "text": " built"
+      },
+      {
+        "id": 483,
+        "text": " with"
+      },
+      {
+        "id": 27830,
+        "text": " Lang"
+      },
+      {
+        "id": 9922,
+        "text": "Graph"
+      },
+      {
+        "id": 13,
+        "text": "."
+      },
+      {
+        "id": 1679,
+        "text": " He"
+      },
+      {
+        "id": 382,
+        "text": " is"
+      },
+      {
+        "id": 261,
+        "text": " a"
+      },
+      {
+        "id": 418,
+        "text": " B"
+      },
+      {
+        "id": 193539,
+        "text": ".Tech"
+      },
+      {
+        "id": 6760,
+        "text": " student"
+      },
+      {
+        "id": 306,
+        "text": " in"
+      },
+      {
+        "id": 8623,
+        "text": " Information"
+      },
+      {
+        "id": 827,
+        "text": " &"
+      },
+      {
+        "id": 41443,
+        "text": " Communication"
+      },
+      {
+        "id": 15101,
+        "text": " Technology"
+      },
+      {
+        "id": 540,
+        "text": " at"
+      },
+      {
+        "id": 39738,
+        "text": " Pand"
+      },
+      {
+        "id": 278,
+        "text": "it"
+      },
+      {
+        "id": 1516,
+        "text": " De"
+      },
+      {
+        "id": 419,
+        "text": "end"
+      },
+      {
+        "id": 356,
+        "text": "ay"
+      },
+      {
+        "id": 280,
+        "text": "al"
+      },
+      {
+        "id": 16394,
+        "text": " Energy"
+      },
+      {
+        "id": 4923,
+        "text": " University"
+      },
+      {
+        "id": 350,
+        "text": " ("
+      },
+      {
+        "id": 17879,
+        "text": "CG"
+      },
+      {
+        "id": 9781,
+        "text": "PA"
+      },
+      {
+        "id": 220,
+        "text": " "
+      },
+      {
+        "id": 23,
+        "text": "8"
+      },
+      {
+        "id": 13,
+        "text": "."
+      },
+      {
+        "id": 3152,
+        "text": "55"
+      },
+      {
+        "id": 14,
+        "text": "/"
+      },
+      {
+        "id": 702,
+        "text": "10"
+      },
+      {
+        "id": 11,
+        "text": ","
+      },
+      {
+        "id": 63973,
+        "text": " graduating"
+      },
+      {
+        "id": 4273,
+        "text": " May"
+      },
+      {
+        "id": 220,
+        "text": " "
+      },
+      {
+        "id": 1323,
+        "text": "202"
+      },
+      {
+        "id": 22,
+        "text": "7"
+      },
+      {
+        "id": 741,
+        "text": ")."
+      },
+      {
+        "id": 7792,
+        "text": " His"
+      },
+      {
+        "id": 1101,
+        "text": " work"
+      },
+      {
+        "id": 6664,
+        "text": " includes"
+      },
+      {
+        "id": 183675,
+        "text": " MDT"
+      },
+      {
+        "id": 20837,
+        "text": " AI"
+      },
+      {
+        "id": 28412,
+        "text": " Cop"
+      },
+      {
+        "id": 56775,
+        "text": "ilot"
+      },
+      {
+        "id": 11,
+        "text": ","
+      },
+      {
+        "id": 261,
+        "text": " a"
+      },
+      {
+        "id": 27830,
+        "text": " Lang"
+      },
+      {
+        "id": 9922,
+        "text": "Graph"
+      },
+      {
+        "id": 11793,
+        "text": " agent"
+      },
+      {
+        "id": 291,
+        "text": "ic"
+      },
+      {
+        "id": 12401,
+        "text": "-R"
+      },
+      {
+        "id": 2971,
+        "text": "AG"
+      },
+      {
+        "id": 8039,
+        "text": " cop"
+      },
+      {
+        "id": 56775,
+        "text": "ilot"
+      },
+      {
+        "id": 395,
+        "text": " for"
+      },
+      {
+        "id": 220,
+        "text": " "
+      },
+      {
+        "id": 20,
+        "text": "5"
+      },
+      {
+        "id": 38,
+        "text": "G"
+      },
+      {
+        "id": 5402,
+        "text": " network"
+      },
+      {
+        "id": 33199,
+        "text": " analytics"
+      },
+      {
+        "id": 483,
+        "text": " with"
+      },
+      {
+        "id": 1036,
+        "text": " Ch"
+      },
+      {
+        "id": 44561,
+        "text": "roma"
+      },
+      {
+        "id": 326,
+        "text": " and"
+      },
+      {
+        "id": 150400,
+        "text": " Coh"
+      },
+      {
+        "id": 512,
+        "text": "ere"
+      },
+      {
+        "id": 96113,
+        "text": " retrieval"
+      },
+      {
+        "id": 11,
+        "text": ","
+      },
+      {
+        "id": 112860,
+        "text": " capped"
+      },
+      {
+        "id": 540,
+        "text": " at"
+      },
+      {
+        "id": 220,
+        "text": " "
+      },
+      {
+        "id": 23,
+        "text": "8"
+      },
+      {
+        "id": 4584,
+        "text": " tool"
+      },
+      {
+        "id": 11666,
+        "text": " calls"
+      },
+      {
+        "id": 26,
+        "text": ";"
+      },
+      {
+        "id": 17378,
+        "text": " Hospital"
+      },
+      {
+        "id": 40217,
+        "text": "Ops"
+      },
+      {
+        "id": 20837,
+        "text": " AI"
+      },
+      {
+        "id": 11,
+        "text": ","
+      },
+      {
+        "id": 261,
+        "text": " a"
+      },
+      {
+        "id": 10824,
+        "text": " hospital"
+      },
+      {
+        "id": 74085,
+        "text": "-demand"
+      },
+      {
+        "id": 115626,
+        "text": " forecasting"
+      },
+      {
+        "id": 29412,
+        "text": " pipeline"
+      },
+      {
+        "id": 484,
+        "text": " that"
+      },
+      {
+        "id": 29505,
+        "text": " cuts"
+      },
+      {
+        "id": 30425,
+        "text": " admission"
+      },
+      {
+        "id": 12,
+        "text": "-"
+      },
+      {
+        "id": 120983,
+        "text": "forecast"
+      },
+      {
+        "id": 12615,
+        "text": " MA"
+      },
+      {
+        "id": 36,
+        "text": "E"
+      },
+      {
+        "id": 316,
+        "text": " to"
+      },
+      {
+        "id": 220,
+        "text": " "
+      },
+      {
+        "id": 18,
+        "text": "3"
+      },
+      {
+        "id": 13,
+        "text": "."
+      },
+      {
+        "id": 5085,
+        "text": "57"
+      },
+      {
+        "id": 591,
+        "text": " from"
+      },
+      {
+        "id": 261,
+        "text": " a"
+      },
+      {
+        "id": 220,
+        "text": " "
+      },
+      {
+        "id": 21,
+        "text": "6"
+      },
+      {
+        "id": 13,
+        "text": "."
+      },
+      {
+        "id": 1709,
+        "text": "22"
+      },
+      {
+        "id": 105687,
+        "text": " naive"
+      },
+      {
+        "id": 51356,
+        "text": " baseline"
+      },
+      {
+        "id": 26,
+        "text": ";"
+      },
+      {
+        "id": 326,
+        "text": " and"
+      },
+      {
+        "id": 7788,
+        "text": " Open"
+      },
+      {
+        "id": 20275,
+        "text": "Env"
+      },
+      {
+        "id": 4833,
+        "text": " Data"
+      },
+      {
+        "id": 48534,
+        "text": " Cleaning"
+      },
+      {
+        "id": 11,
+        "text": ","
+      },
+      {
+        "id": 261,
+        "text": " a"
+      },
+      {
+        "id": 117657,
+        "text": " reinforcement"
+      },
+      {
+        "id": 92452,
+        "text": "-learning"
+      },
+      {
+        "id": 5870,
+        "text": " environment"
+      },
+      {
+        "id": 501,
+        "text": " he"
+      },
+      {
+        "id": 1407,
+        "text": " co"
+      },
+      {
+        "id": 78918,
+        "text": "-built"
+      },
+      {
+        "id": 483,
+        "text": " with"
+      },
+      {
+        "id": 363,
+        "text": " C"
+      },
+      {
+        "id": 5785,
+        "text": "het"
+      },
+      {
+        "id": 270,
+        "text": "an"
+      },
+      {
+        "id": 499,
+        "text": " G"
+      },
+      {
+        "id": 88794,
+        "text": "adhi"
+      },
+      {
+        "id": 2090,
+        "text": "ya"
+      },
+      {
+        "id": 13,
+        "text": "."
+      }
+    ]
+  }
+}

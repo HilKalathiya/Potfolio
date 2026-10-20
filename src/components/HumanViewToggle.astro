@@ -1,0 +1,30 @@
+---
+// SPEC §4 [ human view ] toggle. Pure HTML checkbox + label: toggling works
+// with JavaScript fully disabled (CSS :has() flips the two page modes below).
+// JS only adds persistence across visits via localStorage (try/catch).
+---
+<div class="human-view-control fixed top-3 right-3 z-50">
+  <input type="checkbox" id="human-view-toggle" class="sr-only" />
+  <label
+    for="human-view-toggle"
+    class="inline-block rounded-token border border-border bg-surface px-2.5 py-1 font-mono text-xs text-muted hover:text-text hover:border-accent cursor-pointer transition-colors"
+    style="transition-duration: var(--motion-duration); transition-timing-function: var(--motion-ease);"
+  >
+    [ human view ]
+  </label>
+</div>
+
+<script is:inline>
+  try {
+    var cb = document.getElementById('human-view-toggle');
+    var saved = window.localStorage.getItem('view');
+    if (cb && saved === 'human') cb.checked = true;
+    if (cb) {
+      cb.addEventListener('change', function () {
+        try {
+          window.localStorage.setItem('view', cb.checked ? 'human' : 'agent');
+        } catch (e) {}
+      });
+    }
+  } catch (e) {}
+</script>

@@ -1,0 +1,95 @@
+@import "tailwindcss";
+@import "@fontsource/geist-sans/400.css";
+@import "@fontsource/geist-sans/500.css";
+@import "@fontsource/geist-sans/600.css";
+@import "@fontsource/geist-mono/400.css";
+@import "@fontsource/geist-mono/500.css";
+
+/* SPEC §3 design tokens */
+:root {
+  --bg: #0a0a0b;
+  --surface: #121214;
+  --border: #232326;
+  --text: #ededed;
+  --muted: #8a8a8f;
+  --accent: #ffb224;
+  --success: #3dd68c;
+  --error: #ff5f56;
+  --radius: 6px;
+  --motion-duration: 200ms;
+  --motion-ease: ease-out;
+}
+
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --radius-token: var(--radius);
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration: 0ms;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* 16px gutters, no horizontal scroll on mobile per §3 */
+body {
+  overflow-x: hidden;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* [ human view ] toggle (SPEC §4) — pure CSS, works with JS disabled. */
+[data-view='human-only'] {
+  display: none;
+}
+body:has(#human-view-toggle:checked) [data-view='agent-only'] {
+  display: none;
+}
+body:has(#human-view-toggle:checked) [data-view='human-only'] {
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding-inline: 16px;
+  }
+}
