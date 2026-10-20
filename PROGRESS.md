@@ -29,3 +29,9 @@
 - With de-prefixed chunk text, top-4 became identity, mdt-copilot, openenv, resume-hnnoix, so the answer/critic now cite those (HospitalOps no longer in the hero answer — it ranks 5th).
 - Telemetry strip wraps and drops cost/run <640px; `public/favicon.svg` (mono "h") added. package.json astro `^7.3.8`; npm audit 0.
 - Open: this machine's Node is 22.17.0 (not 22.23), so Astro 7.4.x refuses to build here; lockfile stays on 7.3.8 — run `npm update astro @astrojs/react` on the 22.23 machine.
+
+## Hero content pass
+- Answer cut to 2 sentences / 43 words (identity + CrohnSight 0.992 out-of-fold / 0.944 external); 4 evidence rows below, each linking (opens + scrolls to) its retrieved chunk. `evidence` lives in `hero-trace.json`; the build fails if any evidence or critic chunk isn't displayed. Tokenisation hover verified on the shorter answer (72 tokens).
+- Retrieval is now two-stage: dense+BM25 RRF, top-k 6, then a bi-encoder rerank (cosine of query + generic intent "Machine learning and AI projects: models, evaluation metrics, results against baselines.") with `rerank cos >= 0.15` as the display cut-off; new `rerank` graph node. Scores shown: `cos · bm25 · rrf · rerank`. CrohnSight chunk reworded (capsule-endoscopy, ensemble, evaluation) — facts unchanged.
+- NOT met as specified: crohnsight does not reach the top 4 (ranks 6th of 6, rerank 0.22; top-4 = identity, hospitalops, openenv, hnnoix). Tried intent variants, descriptive embed keys and a real cross-encoder (ms-marco MiniLM scores identity ≈1.0, all others ≈0) — only tuning the intent toward the chunk would force it, so the build asserts identity top-1, hospitalops in top-4, crohnsight retrieved.
+- Graph: 6 nodes, 13.5px labels, ✓/running/ready state line, muted edges at 55% opacity; horizontal fills the left column when it is ≥592px (container query), vertical otherwise. Right column 0.85fr so rows fit.

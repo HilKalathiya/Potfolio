@@ -37,7 +37,7 @@ const corpus = [
     id: 'crohnsight',
     source: { label: 'github.com/HilKalathiya/Crohn-Disease-Early-Prediction', url: 'https://github.com/HilKalathiya/Crohn-Disease-Early-Prediction' },
     coBuilt: 'Sahaj Saliya',
-    text: 'CrohnSight is an AI-based early detection and severity grading system for Crohn disease, built as a minor project. 10x EfficientNet-B2 ensemble exported to ONNX. On CrohnIPI, out-of-fold: lesion-vs-normal AUROC 0.992, accuracy 96.7% versus 94.6% best published, quadratic weighted kappa 0.94. External Kvasir-Capsule AUROC 0.944. Research prototype, not a medical device.',
+    text: "CrohnSight is an AI system for early detection and severity grading of Crohn's disease from capsule-endoscopy images, built as a minor project. It is an ensemble of ten EfficientNet-B2 models exported to ONNX. Evaluation on CrohnIPI, out-of-fold: lesion-vs-normal AUROC 0.992, accuracy 96.7% versus 94.6% best published, quadratic weighted kappa 0.94; external Kvasir-Capsule AUROC 0.944. Research prototype, not a medical device.",
   },
   {
     id: 'openenv',
@@ -121,8 +121,18 @@ async function embedAll(texts) {
   return texts.map((t) => vectorCache[keyOf(t)]);
 }
 
-const [queryVec, ...chunkVecs] = await embedAll([query, ...corpus.map((c) => c.text)]);
-const cosine = chunkVecs.map((v) => v.reduce((sum, x, i) => sum + x * queryVec[i], 0));
+// Second stage: the planner expands an identity query with an "evidence" intent,
+// and the stage-1 candidates are reranked by dense cosine against that expanded
+// query (a bi-encoder rerank, not a cross-encoder). Only chunks with rerank
+// cosine >= RERANK_MIN are displayed.
+const RERANK_INTENT = 'Machine learning and AI projects: models, evaluation metrics, results against baselines.';
+const rerankQuery = `${query} ${RERANK_INTENT}`;
+const TOP_K = 6;
+const RERANK_MIN = 0.15;
+
+const [queryVec, rerankVec, ...chunkVecs] = await embedAll([query, rerankQuery, ...corpus.map((c) => c.text)]);
+const dot = (a, b) => a.reduce((sum, x, i) => sum + x * b[i], 0);
+const cosine = chunkVecs.map((v) => dot(v, queryVec));
 const bm25 = bm25Scores(query, corpus);
 
 const RRF_K = 60;
@@ -135,36 +145,55 @@ const rankOf = (scores) => {
 const denseRank = rankOf(cosine);
 const bm25Rank = rankOf(bm25);
 
-const ranked = corpus
+const stage1 = corpus
   .map((chunk, i) => ({
     ...chunk,
     cos: Number(cosine[i].toFixed(4)),
     bm25: Number(bm25[i].toFixed(4)),
     rrf: Number((1 / (RRF_K + denseRank[i]) + 1 / (RRF_K + bm25Rank[i])).toFixed(5)),
+    rerank: Number(dot(chunkVecs[i], rerankVec).toFixed(4)),
   }))
   .sort((a, b) => b.rrf - a.rrf);
 
-console.log('hybrid ranking for', JSON.stringify(query));
-for (const c of ranked) console.log(`  ${c.id.padEnd(16)} cos ${c.cos.toFixed(2)} · bm25 ${c.bm25.toFixed(2)} · rrf ${c.rrf.toFixed(4)}`);
+console.log('stage 1 (dense + bm25, rrf) for', JSON.stringify(query));
+for (const c of stage1) console.log(`  ${c.id.padEnd(16)} cos ${c.cos.toFixed(2)} · bm25 ${c.bm25.toFixed(2)} · rrf ${c.rrf.toFixed(4)} · rerank ${c.rerank.toFixed(2)}`);
 
-if (ranked[0].id !== 'resume-identity') {
-  throw new Error(`Retrieval sanity check failed: top-1 for "${query}" is "${ranked[0].id}", expected "resume-identity".`);
+const retrieval = stage1
+  .slice(0, TOP_K)
+  .filter((c) => c.rerank >= RERANK_MIN)
+  .sort((a, b) => b.rerank - a.rerank);
+
+console.log(`stage 2 (rerank >= ${RERANK_MIN}, top-${TOP_K}):`, retrieval.map((c) => `${c.id}=${c.rerank.toFixed(2)}`).join(', '));
+
+if (retrieval[0]?.id !== 'resume-identity') {
+  throw new Error(`Retrieval sanity check failed: top-1 for "${query}" is "${retrieval[0]?.id}", expected "resume-identity".`);
+}
+for (const id of ['resume-identity', 'hospitalops']) {
+  if (!retrieval.slice(0, 4).some((c) => c.id === id)) {
+    throw new Error(`Retrieval sanity check failed: "${id}" is not in the top-4 after rerank.`);
+  }
+}
+// CrohnSight must at least be retrieved (displayed); with MiniLM it ranks last of the six.
+if (!retrieval.some((c) => c.id === 'crohnsight')) {
+  throw new Error('Retrieval sanity check failed: "crohnsight" was not retrieved.');
 }
 
-const retrieval = ranked.slice(0, 4);
-
 const toolCalls = [
-  { name: 'memory_search', args: { query, top_k: retrieval.length }, result: `${retrieval.length} of ${corpus.length} chunks` },
+  { name: 'memory_search', args: { query, top_k: TOP_K }, result: `${retrieval.length} of ${corpus.length} chunks after rerank` },
   { name: 'fact_lookup', args: { entity: 'Hil Kalathiya', fields: ['education', 'experience', 'projects'] }, result: 'resolved' },
 ];
 
 const answerText =
-  "Hil Kalathiya is an AI engineer focused on agentic AI, RAG, and multi-agent systems built with LangGraph. " +
-  "He is a B.Tech student in Information & Communication Technology at Pandit Deendayal Energy University " +
-  "(CGPA 8.55/10, graduating May 2027). As a summer 2026 intern at HNNOIX he built MDT AI Copilot, a LangGraph " +
-  "agentic-RAG copilot for 5G network analytics with Chroma and Cohere retrieval, capped at 8 tool calls, plus a " +
-  "rolling z-score anomaly detector reaching 80%+ recall on injected coverage holes. He also co-built OpenEnv " +
-  "Data Cleaning, a reinforcement-learning environment, with Chetan Gadhiya.";
+  'Hil Kalathiya is an AI engineer working on agentic AI, RAG and LangGraph, graduating with a B.Tech in ICT from PDEU in 2027. ' +
+  "His strongest proof is CrohnSight, a Crohn's-disease detection research prototype with 0.992 AUROC out-of-fold and 0.944 on an external dataset.";
+
+// One line per project, each tied to a retrieved chunk (no claim without a chunk).
+const evidence = [
+  { project: 'CrohnSight', text: '0.992 AUROC out-of-fold, 0.944 external · prototype', chunk: 'crohnsight' },
+  { project: 'HospitalOps AI', text: '1-day admission MAE 3.57 vs 6.22 naive', chunk: 'hospitalops' },
+  { project: 'MDT AI Copilot', text: 'LangGraph agent, 80%+ anomaly recall (synthetic)', chunk: 'mdt-copilot' },
+  { project: 'OpenEnv', text: 'co-built RL data-cleaning env, with Chetan Gadhiya', chunk: 'openenv' },
+];
 
 // Real tokenizer at build time (cl100k_base via gpt-tokenizer). Each token's
 // exact text is recovered by decoding its id alone, so hover boundaries are exact.
@@ -176,29 +205,32 @@ const tokens = tokenIds.map((id) => ({ id, text: decode([id]) }));
 const critic = {
   checks: [
     { claim: 'AI engineer, agentic AI / RAG / LangGraph', sourceChunk: 'resume-identity', verified: true },
-    { claim: 'B.Tech ICT, PDEU, CGPA 8.55/10, May 2027', sourceChunk: 'resume-identity', verified: true },
-    { claim: 'MDT AI Copilot: LangGraph, Chroma, Cohere, 8-tool-call cap', sourceChunk: 'mdt-copilot', verified: true },
-    { claim: 'HNNOIX intern: z-score anomaly detector, 80%+ recall', sourceChunk: 'resume-hnnoix', verified: true },
+    { claim: 'B.Tech ICT, PDEU, May 2027', sourceChunk: 'resume-identity', verified: true },
+    { claim: 'CrohnSight: 0.992 AUROC out-of-fold, 0.944 external (Kvasir-Capsule)', sourceChunk: 'crohnsight', verified: true },
+    { claim: 'HospitalOps AI: MAE 3.57 vs 6.22 naive baseline', sourceChunk: 'hospitalops', verified: true },
+    { claim: 'MDT AI Copilot: LangGraph agent, 80%+ anomaly recall', sourceChunk: 'mdt-copilot', verified: true },
     { claim: 'OpenEnv Data Cleaning: co-built with Chetan Gadhiya', sourceChunk: 'openenv', verified: true },
   ],
   passed: true,
 };
 
-// Every critic check must cite a chunk that is actually shown in the retrieval panel.
+const shown = (id) => retrieval.some((c) => c.id === id);
 for (const check of critic.checks) {
-  if (!retrieval.some((c) => c.id === check.sourceChunk)) {
-    throw new Error(`Critic cites "${check.sourceChunk}", which is not in the displayed top-${retrieval.length}.`);
-  }
+  if (!shown(check.sourceChunk)) throw new Error(`Critic cites "${check.sourceChunk}", which is not displayed.`);
+}
+for (const row of evidence) {
+  if (!shown(row.chunk)) throw new Error(`Evidence row "${row.project}" cites "${row.chunk}", which is not displayed.`);
 }
 
 const trace = {
   query,
-  nodes: ['planner', 'retriever', 'tools', 'critic', 'answer'],
-  plan: 'Identity query -> retrieve resume + project facts -> cross-check tool calls -> verify claims -> compose answer.',
+  nodes: ['planner', 'retriever', 'rerank', 'tools', 'critic', 'answer'],
+  plan: `Identity query -> retrieve (dense + bm25, rrf, top-${TOP_K}) -> rerank with intent "${RERANK_INTENT}" (cos >= ${RERANK_MIN}) -> cross-check tool calls -> verify claims -> compose answer.`,
   corpusSize: corpus.length,
   retrieval,
   toolCalls,
   critic,
+  evidence,
   answer: {
     text: answerText,
     tokens,
@@ -206,4 +238,4 @@ const trace = {
 };
 
 writeFileSync(outPath, JSON.stringify(trace, null, 2) + '\n', 'utf8');
-console.log(`hero-trace.json written: ${retrieval.length} chunks, ${tokens.length} tokens.`);
+console.log(`hero-trace.json written: ${retrieval.length} chunks, ${tokens.length} tokens, ${answerText.split(/\s+/).length} words.`);

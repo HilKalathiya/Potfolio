@@ -3,11 +3,12 @@
   "nodes": [
     "planner",
     "retriever",
+    "rerank",
     "tools",
     "critic",
     "answer"
   ],
-  "plan": "Identity query -> retrieve resume + project facts -> cross-check tool calls -> verify claims -> compose answer.",
+  "plan": "Identity query -> retrieve (dense + bm25, rrf, top-6) -> rerank with intent \"Machine learning and AI projects: models, evaluation metrics, results against baselines.\" (cos >= 0.15) -> cross-check tool calls -> verify claims -> compose answer.",
   "corpusSize": 7,
   "retrieval": [
     {
@@ -18,19 +19,21 @@
       },
       "text": "Hil Kalathiya is an AI Engineer (Fresher) working on Agentic AI, RAG, LangGraph and Multi-Agent Systems. Hil is pursuing a B.Tech in Information and Communication Technology at Pandit Deendayal Energy University (PDEU), CGPA 8.55/10, Jul 2023 - May 2027.",
       "cos": 0.7052,
-      "bm25": 5.2026,
-      "rrf": 0.03279
+      "bm25": 5.2405,
+      "rrf": 0.03279,
+      "rerank": 0.7324
     },
     {
-      "id": "mdt-copilot",
+      "id": "hospitalops",
       "source": {
-        "label": "github.com/HilKalathiya/MDT-AI-Copilot",
-        "url": "https://github.com/HilKalathiya/MDT-AI-Copilot"
+        "label": "github.com/HilKalathiya/HospitalOps-AI",
+        "url": "https://github.com/HilKalathiya/HospitalOps-AI"
       },
-      "text": "MDT AI Copilot is an AI analytics and agentic RAG copilot for OpenAirInterface 5G MDT, built on the HNNOIX internship codebase. LangGraph create_react_agent, 5 structured tools, Chroma vector store over 4 knowledge documents embedded with Cohere embed-v4.0. Guardrails: max 8 tool calls, 4,000-character tool-output truncation. Anomaly recall >= 80% on the synthetic set.",
-      "cos": 0.0508,
-      "bm25": 0.3807,
-      "rrf": 0.03175
+      "text": "HospitalOps AI is a Bed Demand Forecasting & Resource Optimization project. Leakage-safe forecasting pipeline with chronological splits and true walk-forward cross-validation on two real-world hospital datasets. Benchmarked naive, seasonal-naive, ARIMA/SARIMAX and Prophet, cutting 1-day admission-forecast MAE to 3.57 from a 6.22 naive baseline. Status: running - building a human-in-the-loop LangGraph multi-agent orchestrator with RAG over hospital policies.",
+      "cos": -0.0495,
+      "bm25": 0.3585,
+      "rrf": 0.03101,
+      "rerank": 0.3611
     },
     {
       "id": "openenv",
@@ -42,7 +45,8 @@
       "text": "OpenEnv Data Cleaning RL Agent: an OpenEnv environment where an agent cleans a dirty pandas table. Agents include a trained PPO policy and a zero-shot LLM agent (Llama 3.1 8B through the Hugging Face router). Pydantic-typed FastAPI environment server containerized and deployed to Hugging Face Spaces.",
       "cos": 0.151,
       "bm25": 0,
-      "rrf": 0.03105
+      "rrf": 0.03105,
+      "rerank": 0.2751
     },
     {
       "id": "resume-hnnoix",
@@ -53,7 +57,33 @@
       "text": "Summer Intern, AI/ML (5G/6G Research & Innovation) at HNNOIX India Private Limited, May-Jul 2026. Built a LangGraph ReAct agent for 5G MDT analytics routing across 5 tools, Chroma retrieval over project docs and C source, Cohere embeddings. Added an 8-tool-call cap and 4,000-character truncation. Designed a per-UE rolling z-score anomaly detector reaching 80%+ recall on injected coverage holes. Built an RSRP forecasting pipeline with GradientBoostingRegressor beating a naive baseline.",
       "cos": 0.1125,
       "bm25": 0,
-      "rrf": 0.03102
+      "rrf": 0.03102,
+      "rerank": 0.2745
+    },
+    {
+      "id": "mdt-copilot",
+      "source": {
+        "label": "github.com/HilKalathiya/MDT-AI-Copilot",
+        "url": "https://github.com/HilKalathiya/MDT-AI-Copilot"
+      },
+      "text": "MDT AI Copilot is an AI analytics and agentic RAG copilot for OpenAirInterface 5G MDT, built on the HNNOIX internship codebase. LangGraph create_react_agent, 5 structured tools, Chroma vector store over 4 knowledge documents embedded with Cohere embed-v4.0. Guardrails: max 8 tool calls, 4,000-character tool-output truncation. Anomaly recall >= 80% on the synthetic set.",
+      "cos": 0.0508,
+      "bm25": 0.385,
+      "rrf": 0.0315,
+      "rerank": 0.2671
+    },
+    {
+      "id": "crohnsight",
+      "source": {
+        "label": "github.com/HilKalathiya/Crohn-Disease-Early-Prediction",
+        "url": "https://github.com/HilKalathiya/Crohn-Disease-Early-Prediction"
+      },
+      "coBuilt": "Sahaj Saliya",
+      "text": "CrohnSight is an AI system for early detection and severity grading of Crohn's disease from capsule-endoscopy images, built as a minor project. It is an ensemble of ten EfficientNet-B2 models exported to ONNX. Evaluation on CrohnIPI, out-of-fold: lesion-vs-normal AUROC 0.992, accuracy 96.7% versus 94.6% best published, quadratic weighted kappa 0.94; external Kvasir-Capsule AUROC 0.944. Research prototype, not a medical device.",
+      "cos": -0.0786,
+      "bm25": 0.5085,
+      "rrf": 0.03105,
+      "rerank": 0.2248
     }
   ],
   "toolCalls": [
@@ -61,9 +91,9 @@
       "name": "memory_search",
       "args": {
         "query": "Who is Hil Kalathiya?",
-        "top_k": 4
+        "top_k": 6
       },
-      "result": "4 of 7 chunks"
+      "result": "6 of 7 chunks after rerank"
     },
     {
       "name": "fact_lookup",
@@ -86,18 +116,23 @@
         "verified": true
       },
       {
-        "claim": "B.Tech ICT, PDEU, CGPA 8.55/10, May 2027",
+        "claim": "B.Tech ICT, PDEU, May 2027",
         "sourceChunk": "resume-identity",
         "verified": true
       },
       {
-        "claim": "MDT AI Copilot: LangGraph, Chroma, Cohere, 8-tool-call cap",
-        "sourceChunk": "mdt-copilot",
+        "claim": "CrohnSight: 0.992 AUROC out-of-fold, 0.944 external (Kvasir-Capsule)",
+        "sourceChunk": "crohnsight",
         "verified": true
       },
       {
-        "claim": "HNNOIX intern: z-score anomaly detector, 80%+ recall",
-        "sourceChunk": "resume-hnnoix",
+        "claim": "HospitalOps AI: MAE 3.57 vs 6.22 naive baseline",
+        "sourceChunk": "hospitalops",
+        "verified": true
+      },
+      {
+        "claim": "MDT AI Copilot: LangGraph agent, 80%+ anomaly recall",
+        "sourceChunk": "mdt-copilot",
         "verified": true
       },
       {
@@ -108,8 +143,30 @@
     ],
     "passed": true
   },
+  "evidence": [
+    {
+      "project": "CrohnSight",
+      "text": "0.992 AUROC out-of-fold, 0.944 external · prototype",
+      "chunk": "crohnsight"
+    },
+    {
+      "project": "HospitalOps AI",
+      "text": "1-day admission MAE 3.57 vs 6.22 naive",
+      "chunk": "hospitalops"
+    },
+    {
+      "project": "MDT AI Copilot",
+      "text": "LangGraph agent, 80%+ anomaly recall (synthetic)",
+      "chunk": "mdt-copilot"
+    },
+    {
+      "project": "OpenEnv",
+      "text": "co-built RL data-cleaning env, with Chetan Gadhiya",
+      "chunk": "openenv"
+    }
+  ],
   "answer": {
-    "text": "Hil Kalathiya is an AI engineer focused on agentic AI, RAG, and multi-agent systems built with LangGraph. He is a B.Tech student in Information & Communication Technology at Pandit Deendayal Energy University (CGPA 8.55/10, graduating May 2027). As a summer 2026 intern at HNNOIX he built MDT AI Copilot, a LangGraph agentic-RAG copilot for 5G network analytics with Chroma and Cohere retrieval, capped at 8 tool calls, plus a rolling z-score anomaly detector reaching 80%+ recall on injected coverage holes. He also co-built OpenEnv Data Cleaning, a reinforcement-learning environment, with Chetan Gadhiya.",
+    "text": "Hil Kalathiya is an AI engineer working on agentic AI, RAG and LangGraph, graduating with a B.Tech in ICT from PDEU in 2027. His strongest proof is CrohnSight, a Crohn's-disease detection research prototype with 0.992 AUROC out-of-fold and 0.944 on an external dataset.",
     "tokens": [
       {
         "id": 120912,
@@ -144,8 +201,8 @@
         "text": " engineer"
       },
       {
-        "id": 15055,
-        "text": " focused"
+        "id": 4113,
+        "text": " working"
       },
       {
         "id": 402,
@@ -176,32 +233,8 @@
         "text": "AG"
       },
       {
-        "id": 11,
-        "text": ","
-      },
-      {
         "id": 326,
         "text": " and"
-      },
-      {
-        "id": 12151,
-        "text": " multi"
-      },
-      {
-        "id": 97226,
-        "text": "-agent"
-      },
-      {
-        "id": 7511,
-        "text": " systems"
-      },
-      {
-        "id": 8113,
-        "text": " built"
-      },
-      {
-        "id": 483,
-        "text": " with"
       },
       {
         "id": 27830,
@@ -212,16 +245,16 @@
         "text": "Graph"
       },
       {
-        "id": 13,
-        "text": "."
+        "id": 11,
+        "text": ","
       },
       {
-        "id": 1679,
-        "text": " He"
+        "id": 63973,
+        "text": " graduating"
       },
       {
-        "id": 382,
-        "text": " is"
+        "id": 483,
+        "text": " with"
       },
       {
         "id": 261,
@@ -236,112 +269,28 @@
         "text": ".Tech"
       },
       {
-        "id": 6760,
-        "text": " student"
-      },
-      {
         "id": 306,
         "text": " in"
       },
       {
-        "id": 8623,
-        "text": " Information"
+        "id": 66987,
+        "text": " ICT"
       },
       {
-        "id": 827,
-        "text": " &"
+        "id": 591,
+        "text": " from"
       },
       {
-        "id": 41443,
-        "text": " Communication"
+        "id": 197165,
+        "text": " PDE"
       },
       {
-        "id": 15101,
-        "text": " Technology"
+        "id": 52,
+        "text": "U"
       },
       {
-        "id": 540,
-        "text": " at"
-      },
-      {
-        "id": 39738,
-        "text": " Pand"
-      },
-      {
-        "id": 278,
-        "text": "it"
-      },
-      {
-        "id": 1516,
-        "text": " De"
-      },
-      {
-        "id": 419,
-        "text": "end"
-      },
-      {
-        "id": 356,
-        "text": "ay"
-      },
-      {
-        "id": 280,
-        "text": "al"
-      },
-      {
-        "id": 16394,
-        "text": " Energy"
-      },
-      {
-        "id": 4923,
-        "text": " University"
-      },
-      {
-        "id": 350,
-        "text": " ("
-      },
-      {
-        "id": 17879,
-        "text": "CG"
-      },
-      {
-        "id": 9781,
-        "text": "PA"
-      },
-      {
-        "id": 220,
-        "text": " "
-      },
-      {
-        "id": 23,
-        "text": "8"
-      },
-      {
-        "id": 13,
-        "text": "."
-      },
-      {
-        "id": 3152,
-        "text": "55"
-      },
-      {
-        "id": 14,
-        "text": "/"
-      },
-      {
-        "id": 702,
-        "text": "10"
-      },
-      {
-        "id": 11,
-        "text": ","
-      },
-      {
-        "id": 63973,
-        "text": " graduating"
-      },
-      {
-        "id": 4273,
-        "text": " May"
+        "id": 306,
+        "text": " in"
       },
       {
         "id": 220,
@@ -356,80 +305,36 @@
         "text": "7"
       },
       {
-        "id": 741,
-        "text": ")."
+        "id": 13,
+        "text": "."
       },
       {
-        "id": 1877,
-        "text": " As"
+        "id": 7792,
+        "text": " His"
       },
       {
-        "id": 261,
-        "text": " a"
+        "id": 57093,
+        "text": " strongest"
       },
       {
-        "id": 9333,
-        "text": " summer"
+        "id": 19545,
+        "text": " proof"
       },
       {
-        "id": 220,
-        "text": " "
+        "id": 382,
+        "text": " is"
       },
       {
-        "id": 1323,
-        "text": "202"
+        "id": 25186,
+        "text": " Cro"
       },
       {
-        "id": 21,
-        "text": "6"
+        "id": 10353,
+        "text": "hn"
       },
       {
-        "id": 2693,
-        "text": " intern"
-      },
-      {
-        "id": 540,
-        "text": " at"
-      },
-      {
-        "id": 487,
-        "text": " H"
-      },
-      {
-        "id": 45,
-        "text": "N"
-      },
-      {
-        "id": 14695,
-        "text": "NO"
-      },
-      {
-        "id": 8996,
-        "text": "IX"
-      },
-      {
-        "id": 501,
-        "text": " he"
-      },
-      {
-        "id": 8113,
-        "text": " built"
-      },
-      {
-        "id": 183675,
-        "text": " MDT"
-      },
-      {
-        "id": 20837,
-        "text": " AI"
-      },
-      {
-        "id": 28412,
-        "text": " Cop"
-      },
-      {
-        "id": 56775,
-        "text": "ilot"
+        "id": 121841,
+        "text": "Sight"
       },
       {
         "id": 11,
@@ -440,276 +345,112 @@
         "text": " a"
       },
       {
-        "id": 27830,
-        "text": " Lang"
+        "id": 25186,
+        "text": " Cro"
       },
       {
-        "id": 9922,
-        "text": "Graph"
+        "id": 10353,
+        "text": "hn"
       },
       {
-        "id": 11793,
-        "text": " agent"
+        "id": 885,
+        "text": "'s"
       },
       {
-        "id": 291,
-        "text": "ic"
+        "id": 2469,
+        "text": "-d"
       },
       {
-        "id": 12401,
-        "text": "-R"
+        "id": 87114,
+        "text": "isease"
       },
       {
-        "id": 2971,
-        "text": "AG"
+        "id": 28385,
+        "text": " detection"
       },
       {
-        "id": 8039,
-        "text": " cop"
+        "id": 4176,
+        "text": " research"
       },
       {
-        "id": 56775,
-        "text": "ilot"
-      },
-      {
-        "id": 395,
-        "text": " for"
-      },
-      {
-        "id": 220,
-        "text": " "
-      },
-      {
-        "id": 20,
-        "text": "5"
-      },
-      {
-        "id": 38,
-        "text": "G"
-      },
-      {
-        "id": 5402,
-        "text": " network"
-      },
-      {
-        "id": 33199,
-        "text": " analytics"
+        "id": 47613,
+        "text": " prototype"
       },
       {
         "id": 483,
         "text": " with"
       },
       {
-        "id": 1036,
-        "text": " Ch"
-      },
-      {
-        "id": 44561,
-        "text": "roma"
-      },
-      {
-        "id": 326,
-        "text": " and"
-      },
-      {
-        "id": 150400,
-        "text": " Coh"
-      },
-      {
-        "id": 512,
-        "text": "ere"
-      },
-      {
-        "id": 96113,
-        "text": " retrieval"
-      },
-      {
-        "id": 11,
-        "text": ","
-      },
-      {
-        "id": 112860,
-        "text": " capped"
-      },
-      {
-        "id": 540,
-        "text": " at"
-      },
-      {
         "id": 220,
         "text": " "
       },
       {
-        "id": 23,
-        "text": "8"
-      },
-      {
-        "id": 4584,
-        "text": " tool"
-      },
-      {
-        "id": 11666,
-        "text": " calls"
-      },
-      {
-        "id": 11,
-        "text": ","
-      },
-      {
-        "id": 2932,
-        "text": " plus"
-      },
-      {
-        "id": 261,
-        "text": " a"
-      },
-      {
-        "id": 30530,
-        "text": " rolling"
-      },
-      {
-        "id": 579,
-        "text": " z"
-      },
-      {
-        "id": 165048,
-        "text": "-score"
-      },
-      {
-        "id": 139959,
-        "text": " anomaly"
-      },
-      {
-        "id": 51124,
-        "text": " detector"
-      },
-      {
-        "id": 29787,
-        "text": " reaching"
-      },
-      {
-        "id": 220,
-        "text": " "
-      },
-      {
-        "id": 2241,
-        "text": "80"
-      },
-      {
-        "id": 4,
-        "text": "%"
-      },
-      {
-        "id": 10,
-        "text": "+"
-      },
-      {
-        "id": 30890,
-        "text": " recall"
-      },
-      {
-        "id": 402,
-        "text": " on"
-      },
-      {
-        "id": 73256,
-        "text": " injected"
-      },
-      {
-        "id": 13422,
-        "text": " coverage"
-      },
-      {
-        "id": 30416,
-        "text": " holes"
+        "id": 15,
+        "text": "0"
       },
       {
         "id": 13,
         "text": "."
       },
       {
-        "id": 1679,
-        "text": " He"
+        "id": 43658,
+        "text": "992"
       },
       {
-        "id": 1217,
-        "text": " also"
+        "id": 43920,
+        "text": " AU"
       },
       {
-        "id": 1407,
-        "text": " co"
+        "id": 136996,
+        "text": "ROC"
       },
       {
-        "id": 78918,
-        "text": "-built"
+        "id": 842,
+        "text": " out"
       },
       {
-        "id": 7788,
-        "text": " Open"
+        "id": 13108,
+        "text": "-of"
       },
       {
-        "id": 20275,
-        "text": "Env"
+        "id": 35983,
+        "text": "-fold"
       },
       {
-        "id": 4833,
-        "text": " Data"
+        "id": 326,
+        "text": " and"
       },
       {
-        "id": 48534,
-        "text": " Cleaning"
+        "id": 220,
+        "text": " "
       },
       {
-        "id": 11,
-        "text": ","
+        "id": 15,
+        "text": "0"
       },
       {
-        "id": 261,
-        "text": " a"
+        "id": 13,
+        "text": "."
       },
       {
-        "id": 117657,
-        "text": " reinforcement"
+        "id": 49185,
+        "text": "944"
       },
       {
-        "id": 92452,
-        "text": "-learning"
+        "id": 402,
+        "text": " on"
       },
       {
-        "id": 5870,
-        "text": " environment"
+        "id": 448,
+        "text": " an"
       },
       {
-        "id": 11,
-        "text": ","
+        "id": 12229,
+        "text": " external"
       },
       {
-        "id": 483,
-        "text": " with"
-      },
-      {
-        "id": 363,
-        "text": " C"
-      },
-      {
-        "id": 5785,
-        "text": "het"
-      },
-      {
-        "id": 270,
-        "text": "an"
-      },
-      {
-        "id": 499,
-        "text": " G"
-      },
-      {
-        "id": 88794,
-        "text": "adhi"
-      },
-      {
-        "id": 2090,
-        "text": "ya"
+        "id": 20830,
+        "text": " dataset"
       },
       {
         "id": 13,

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 
 interface RetrievalChunk {
   id: string;
@@ -8,6 +8,7 @@ interface RetrievalChunk {
   cos: number;
   bm25: number;
   rrf: number;
+  rerank: number;
 }
 
 interface ToolCall {
@@ -35,6 +36,7 @@ export interface HeroTraceData {
   retrieval: RetrievalChunk[];
   toolCalls: ToolCall[];
   critic: { checks: CriticCheck[]; passed: boolean };
+  evidence: { project: string; text: string; chunk: string }[];
   answer: { text: string; tokens: Token[] };
 }
 
@@ -44,8 +46,16 @@ interface Props {
 
 type NodeState = 'pending' | 'running' | 'done';
 
-const H = { w: 98, h: 34, gap: 21, y: 15 };
-const V = { w: 120, h: 30, gap: 22, x: 10 };
+const H = { w: 84, h: 50, gap: 18, y: 8 };
+const V = { w: 200, h: 38, gap: 22, x: 10 };
+
+function openChunk(e: ReactMouseEvent, id: string) {
+  const el = document.getElementById(`chunk-${id}`) as HTMLDetailsElement | null;
+  if (!el) return;
+  e.preventDefault();
+  el.open = true;
+  el.scrollIntoView({ block: 'center' });
+}
 
 function AgentGraph({
   nodes,
@@ -58,6 +68,7 @@ function AgentGraph({
   streaming: boolean;
   vertical: boolean;
 }) {
+  const last = nodes.length - 1;
   const stateOf = (i: number): NodeState => {
     if (stage === 0 || i > stage - 1) return 'pending';
     return i === stage - 1 ? 'running' : 'done';
@@ -84,14 +95,14 @@ function AgentGraph({
     <svg
       viewBox={`0 0 ${width} ${height}`}
       width="100%"
-      style={{ maxWidth: vertical ? 160 : 574, height: 'auto' }}
+      style={{ maxWidth: vertical ? 220 : 760, height: 'auto' }}
       role="img"
       aria-label={`Agent graph: ${nodes.join(' → ')}`}
-      className={vertical ? 'sm:hidden' : 'hidden sm:block'}
+      className={vertical ? 'block @[37rem]:hidden' : 'hidden @[37rem]:block'}
     >
       <defs>
-        <marker id={markerId} viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
-          <path d="M 0 0 L 8 4 L 0 8 z" fill="var(--muted)" />
+        <marker id={markerId} viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 0 0 L 8 4 L 0 8 z" fill="var(--muted)" fillOpacity="0.8" />
         </marker>
       </defs>
 
@@ -99,7 +110,14 @@ function AgentGraph({
         const travelling = stage === i + 2 && (stage < nodes.length || streaming);
         return (
           <g key={`edge-${i}`}>
-            <path d={edgePath(i)} stroke="var(--border)" strokeWidth="1" fill="none" markerEnd={`url(#${markerId})`} />
+            <path
+              d={edgePath(i)}
+              stroke="var(--muted)"
+              strokeOpacity="0.55"
+              strokeWidth="1.25"
+              fill="none"
+              markerEnd={`url(#${markerId})`}
+            />
             {travelling && (
               <circle r="2.5" fill="var(--accent)">
                 <animateMotion dur="0.24s" repeatCount="indefinite" path={edgePath(i)} />
@@ -113,6 +131,9 @@ function AgentGraph({
         const p = pos(i);
         const state = stateOf(i);
         const running = state === 'running';
+        const showState = state === 'done' || (running && !vertical);
+        const stateLabel =
+          state === 'done' ? '✓' : i === last && !streaming ? 'ready' : 'running';
         return (
           <g key={node}>
             <rect
@@ -126,26 +147,27 @@ function AgentGraph({
               strokeWidth="1"
             />
             <text
-              x={p.x + 10}
-              y={p.y + p.h / 2}
+              x={vertical ? p.x + 14 : p.x + p.w / 2}
+              y={vertical ? p.y + p.h / 2 : p.y + 19}
               dominantBaseline="central"
+              textAnchor={vertical ? 'start' : 'middle'}
               fontFamily="var(--font-mono)"
-              fontSize="10.5"
+              fontSize="13.5"
               fill={running ? 'var(--text)' : 'var(--muted)'}
             >
               {node}
             </text>
-            {state === 'done' && (
+            {showState && (
               <text
-                x={p.x + p.w - 12}
-                y={p.y + p.h / 2}
+                x={vertical ? p.x + p.w - 16 : p.x + p.w / 2}
+                y={vertical ? p.y + p.h / 2 : p.y + 37}
                 dominantBaseline="central"
                 textAnchor="middle"
                 fontFamily="var(--font-mono)"
-                fontSize="10.5"
-                fill="var(--muted)"
+                fontSize={state === 'done' ? 13 : 10.5}
+                fill={running ? 'var(--accent)' : 'var(--muted)'}
               >
-                ✓
+                {stateLabel}
               </text>
             )}
           </g>
@@ -158,7 +180,7 @@ function AgentGraph({
 // SPEC §5 Act 1: pre-recorded trace (src/data/hero-trace.json, built offline at
 // build time). Default render shows the finished state — same markup with JS
 // off or prefers-reduced-motion — then, when motion is allowed, rewinds and
-// replays the planner → retriever → tools → critic → answer lighting order.
+// replays the planner → retriever → rerank → tools → critic → answer order.
 export default function HeroTrace({ trace }: Props) {
   const totalStages = trace.nodes.length;
   const totalTokens = trace.answer.tokens.length;
@@ -173,7 +195,7 @@ export default function HeroTrace({ trace }: Props) {
     setStage(0);
     setTokenCount(0);
 
-    const stageDelays = [0, 300, 650, 900, 1150];
+    const stageDelays = [0, 300, 650, 900, 1150, 1400];
     const timers = stageDelays.map((delay, i) =>
       window.setTimeout(() => setStage(i + 1), delay),
     );
@@ -187,7 +209,7 @@ export default function HeroTrace({ trace }: Props) {
           window.clearInterval(tokenTimer.current);
         }
       }, 14);
-    }, stageDelays[4] + 50);
+    }, stageDelays[5] + 50);
 
     return () => {
       timers.forEach(window.clearTimeout);
@@ -197,14 +219,15 @@ export default function HeroTrace({ trace }: Props) {
   }, [trace, totalTokens]);
 
   const streaming = tokenCount < totalTokens;
-  const chunksVisible = stage >= 2;
-  const toolsVisible = stage >= 3;
-  const criticVisible = stage >= 4;
-  const answerVisible = stage >= 5;
+  const chunksVisible = stage >= 3;
+  const toolsVisible = stage >= 4;
+  const criticVisible = stage >= 5;
+  const answerVisible = stage >= 6;
+  const evidenceVisible = answerVisible && !streaming;
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
-      <div className="order-1 flex flex-col gap-3 lg:order-2">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
+      <div className="order-1 flex min-w-0 flex-col gap-3 lg:order-2">
         <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <span className="text-base font-semibold text-text">Hil Kalathiya</span>
           <span className="font-mono text-xs text-muted">AI Engineer · Agentic AI, RAG, LangGraph</span>
@@ -228,9 +251,29 @@ export default function HeroTrace({ trace }: Props) {
           </p>
           <p className="font-mono text-[11px] text-muted">hover the answer to see its tokens</p>
         </section>
+
+        {evidenceVisible && (
+          <section aria-label="Evidence" className="mt-2 flex flex-col gap-2">
+            <h2 className="font-mono text-xs text-muted">evidence · each row links to its retrieved chunk</h2>
+            <ul className="flex flex-col gap-1.5">
+              {trace.evidence.map((row) => (
+                <li key={row.project} className="text-[13px] leading-snug">
+                  <a
+                    href={`#chunk-${row.chunk}`}
+                    onClick={(e) => openChunk(e, row.chunk)}
+                    className="font-medium text-text underline decoration-border underline-offset-2"
+                  >
+                    {row.project}
+                  </a>{' '}
+                  <span className="text-muted">— {row.text}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
 
-      <div className="order-2 flex flex-col gap-6 lg:order-1">
+      <div className="@container order-2 flex min-w-0 flex-col gap-6 lg:order-1">
         <p className="font-mono text-xs text-muted">
           query: <span className="text-text">&ldquo;{trace.query}&rdquo;</span>
         </p>
@@ -245,19 +288,22 @@ export default function HeroTrace({ trace }: Props) {
         {chunksVisible && (
           <section aria-label="Retrieved chunks" className="flex flex-col gap-2">
             <h2 className="font-mono text-xs text-muted">
-              retrieved chunks · top {trace.retrieval.length} of {trace.corpusSize}
+              retrieved + reranked · {trace.retrieval.length} of {trace.corpusSize} (rerank cos ≥ 0.15)
             </h2>
             <ul className="flex flex-col gap-1.5">
               {trace.retrieval.map((chunk) => (
                 <li key={chunk.id}>
-                  <details className="chunk rounded-token border border-border bg-surface">
+                  <details id={`chunk-${chunk.id}`} className="chunk rounded-token border border-border bg-surface">
                     <summary className="flex cursor-pointer flex-wrap items-baseline gap-x-3 px-3 py-1.5 font-mono text-xs">
                       <span className="text-text">{chunk.id}</span>
                       {chunk.coBuilt && (
                         <span className="hidden text-[11px] text-muted sm:inline">co-built with {chunk.coBuilt}</span>
                       )}
-                      <span className="ml-auto text-muted">
-                        cos {chunk.cos.toFixed(2)} · bm25 {chunk.bm25.toFixed(2)} · rrf {chunk.rrf.toFixed(3)}
+                      <span className="ml-auto flex flex-wrap justify-end gap-x-1.5 text-muted">
+                        <span className="whitespace-nowrap">cos {chunk.cos.toFixed(2)} ·</span>
+                        <span className="whitespace-nowrap">bm25 {chunk.bm25.toFixed(2)} ·</span>
+                        <span className="whitespace-nowrap">rrf {chunk.rrf.toFixed(3)} ·</span>
+                        <span className="whitespace-nowrap">rerank {chunk.rerank.toFixed(2)}</span>
                       </span>
                     </summary>
                     <div className="flex flex-col gap-1.5 px-3 pb-3 pt-1">
