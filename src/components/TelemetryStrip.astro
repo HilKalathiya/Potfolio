@@ -7,15 +7,15 @@ const stats = [
   { label: 'tokens', value: '—' },
   { label: 'latency', value: '—' },
   { label: 'runs today', value: '—' },
-  { label: 'cost/run', value: '—' },
+  { label: 'cost/run', value: '—', hideOnMobile: true },
 ];
 ---
 <footer
-  class="fixed bottom-0 left-0 md:left-56 right-0 border-t border-border bg-surface px-4 py-2 flex gap-6 font-mono text-xs text-muted overflow-x-auto"
+  class="fixed bottom-0 left-0 md:left-56 right-0 border-t border-border bg-surface px-4 py-2 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-muted"
 >
   {
     stats.map((s) => (
-      <span class="whitespace-nowrap">
+      <span class={`whitespace-nowrap ${s.hideOnMobile ? "hidden sm:inline" : ""}`}>
         {s.label}: <span class="text-text">{s.value}</span>
       </span>
     ))

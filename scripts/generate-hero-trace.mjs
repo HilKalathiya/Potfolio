@@ -13,45 +13,47 @@ const outPath = resolve(__dirname, '../src/data/hero-trace.json');
 
 const query = 'Who is Hil Kalathiya?';
 
-// Retrieval corpus — short excerpts drawn only from _research/ facts.
+// Retrieval corpus — short excerpts drawn only from _research/ facts. `source` is the public link shown in the UI, never an internal path.
 // SPEC §6 exclusions respected: no misinformation_ai_hil, Vala-JAT, forks other
 // than open-env-nuclei, or "register". The embargoed Alfa Connectome project is
 // deliberately NOT in the hero corpus, so it can never be retrieved here.
 const corpus = [
   {
     id: 'resume-identity',
-    source: '_research/resume.txt',
+    source: { label: 'resume', url: null },
     text: 'Hil Kalathiya is an AI Engineer (Fresher) working on Agentic AI, RAG, LangGraph and Multi-Agent Systems. Hil is pursuing a B.Tech in Information and Communication Technology at Pandit Deendayal Energy University (PDEU), CGPA 8.55/10, Jul 2023 - May 2027.',
   },
   {
     id: 'resume-hnnoix',
-    source: '_research/resume.txt',
-    text: 'Hil Kalathiya worked as Summer Intern, AI/ML (5G/6G Research & Innovation) at HNNOIX India Private Limited, May-Jul 2026. He built a LangGraph ReAct agent for 5G MDT analytics routing across 5 tools, Chroma retrieval over project docs and C source, Cohere embeddings. Added an 8-tool-call cap and 4,000-character truncation. Designed a per-UE rolling z-score anomaly detector reaching 80%+ recall on injected coverage holes. Built an RSRP forecasting pipeline with GradientBoostingRegressor beating a naive baseline.',
+    source: { label: 'resume', url: null },
+    text: 'Summer Intern, AI/ML (5G/6G Research & Innovation) at HNNOIX India Private Limited, May-Jul 2026. Built a LangGraph ReAct agent for 5G MDT analytics routing across 5 tools, Chroma retrieval over project docs and C source, Cohere embeddings. Added an 8-tool-call cap and 4,000-character truncation. Designed a per-UE rolling z-score anomaly detector reaching 80%+ recall on injected coverage holes. Built an RSRP forecasting pipeline with GradientBoostingRegressor beating a naive baseline.',
   },
   {
     id: 'hospitalops',
-    source: '_research/resume.txt + _research/readmes/HospitalOps-AI.md',
-    text: "Hil Kalathiya's HospitalOps AI is a Bed Demand Forecasting & Resource Optimization project. Leakage-safe forecasting pipeline with chronological splits and true walk-forward cross-validation on two real-world hospital datasets. Benchmarked naive, seasonal-naive, ARIMA/SARIMAX and Prophet, cutting 1-day admission-forecast MAE to 3.57 from a 6.22 naive baseline. Status: running - building a human-in-the-loop LangGraph multi-agent orchestrator with RAG over hospital policies.",
+    source: { label: 'github.com/HilKalathiya/HospitalOps-AI', url: 'https://github.com/HilKalathiya/HospitalOps-AI' },
+    text: 'HospitalOps AI is a Bed Demand Forecasting & Resource Optimization project. Leakage-safe forecasting pipeline with chronological splits and true walk-forward cross-validation on two real-world hospital datasets. Benchmarked naive, seasonal-naive, ARIMA/SARIMAX and Prophet, cutting 1-day admission-forecast MAE to 3.57 from a 6.22 naive baseline. Status: running - building a human-in-the-loop LangGraph multi-agent orchestrator with RAG over hospital policies.',
   },
   {
     id: 'crohnsight',
-    source: '_research/readmes/Crohn-Disease-Early-Prediction.md',
-    text: "Hil Kalathiya co-built CrohnSight, an AI-based early detection and severity grading system for Crohn disease, as a minor project with Sahaj Saliya. 10x EfficientNet-B2 ensemble exported to ONNX. On CrohnIPI, out-of-fold: lesion-vs-normal AUROC 0.992, accuracy 96.7% versus 94.6% best published, quadratic weighted kappa 0.94. External Kvasir-Capsule AUROC 0.944. Research prototype, not a medical device.",
+    source: { label: 'github.com/HilKalathiya/Crohn-Disease-Early-Prediction', url: 'https://github.com/HilKalathiya/Crohn-Disease-Early-Prediction' },
+    coBuilt: 'Sahaj Saliya',
+    text: 'CrohnSight is an AI-based early detection and severity grading system for Crohn disease, built as a minor project. 10x EfficientNet-B2 ensemble exported to ONNX. On CrohnIPI, out-of-fold: lesion-vs-normal AUROC 0.992, accuracy 96.7% versus 94.6% best published, quadratic weighted kappa 0.94. External Kvasir-Capsule AUROC 0.944. Research prototype, not a medical device.',
   },
   {
     id: 'openenv',
-    source: '_research/readmes/open-env-nuclei.md + _research/resume.txt',
-    text: "Hil Kalathiya co-built the OpenEnv Data Cleaning RL Agent with Chetan Gadhiya (repo is a fork; live demo Space is Chetan's). An OpenEnv environment where an agent cleans a dirty pandas table; agents include a trained PPO policy and a zero-shot LLM agent (Llama 3.1 8B through the Hugging Face router). Pydantic-typed FastAPI environment server containerized and deployed to Hugging Face Spaces.",
+    source: { label: 'github.com/HilKalathiya/open-env-nuclei', url: 'https://github.com/HilKalathiya/open-env-nuclei' },
+    coBuilt: 'Chetan Gadhiya',
+    text: 'OpenEnv Data Cleaning RL Agent: an OpenEnv environment where an agent cleans a dirty pandas table. Agents include a trained PPO policy and a zero-shot LLM agent (Llama 3.1 8B through the Hugging Face router). Pydantic-typed FastAPI environment server containerized and deployed to Hugging Face Spaces.',
   },
   {
     id: 'mdt-copilot',
-    source: '_research/readmes/MDT-AI-Copilot.md',
-    text: "Hil Kalathiya built MDT AI Copilot, an AI analytics and agentic RAG copilot for OpenAirInterface 5G MDT, on the HNNOIX internship codebase. LangGraph create_react_agent, 5 structured tools, Chroma vector store over 4 knowledge documents embedded with Cohere embed-v4.0. Guardrails: max 8 tool calls, 4,000-character tool-output truncation. Anomaly recall >= 80% on the synthetic set.",
+    source: { label: 'github.com/HilKalathiya/MDT-AI-Copilot', url: 'https://github.com/HilKalathiya/MDT-AI-Copilot' },
+    text: 'MDT AI Copilot is an AI analytics and agentic RAG copilot for OpenAirInterface 5G MDT, built on the HNNOIX internship codebase. LangGraph create_react_agent, 5 structured tools, Chroma vector store over 4 knowledge documents embedded with Cohere embed-v4.0. Guardrails: max 8 tool calls, 4,000-character tool-output truncation. Anomaly recall >= 80% on the synthetic set.',
   },
   {
     id: 'ectd',
-    source: '_research/local/ectd.md',
-    text: "Hil Kalathiya's eCTD audit engine is a system design (status: design, not yet built) for an auditable CMC drafting pipeline: every number would trace to raw lab data, be verified by code, and be signed by a human before Veeva Vault publishes it. The design includes one simulation: an OCR+VLM cross-check stress test on 9,600 synthetic values that stored zero wrong values, routing 194 to a human reviewer.",
+    source: { label: 'design notes', url: null },
+    text: 'The eCTD audit engine is a system design (status: design, not yet built) for an auditable CMC drafting pipeline: every number would trace to raw lab data, be verified by code, and be signed by a human before Veeva Vault publishes it. The design includes one simulation: an OCR+VLM cross-check stress test on 9,600 synthetic values that stored zero wrong values, routing 194 to a human reviewer.',
   },
 ];
 
@@ -159,10 +161,10 @@ const toolCalls = [
 const answerText =
   "Hil Kalathiya is an AI engineer focused on agentic AI, RAG, and multi-agent systems built with LangGraph. " +
   "He is a B.Tech student in Information & Communication Technology at Pandit Deendayal Energy University " +
-  "(CGPA 8.55/10, graduating May 2027). His work includes MDT AI Copilot, a LangGraph agentic-RAG copilot for " +
-  "5G network analytics with Chroma and Cohere retrieval, capped at 8 tool calls; HospitalOps AI, a " +
-  "hospital-demand forecasting pipeline that cuts admission-forecast MAE to 3.57 from a 6.22 naive baseline; " +
-  "and OpenEnv Data Cleaning, a reinforcement-learning environment he co-built with Chetan Gadhiya.";
+  "(CGPA 8.55/10, graduating May 2027). As a summer 2026 intern at HNNOIX he built MDT AI Copilot, a LangGraph " +
+  "agentic-RAG copilot for 5G network analytics with Chroma and Cohere retrieval, capped at 8 tool calls, plus a " +
+  "rolling z-score anomaly detector reaching 80%+ recall on injected coverage holes. He also co-built OpenEnv " +
+  "Data Cleaning, a reinforcement-learning environment, with Chetan Gadhiya.";
 
 // Real tokenizer at build time (cl100k_base via gpt-tokenizer). Each token's
 // exact text is recovered by decoding its id alone, so hover boundaries are exact.
@@ -176,7 +178,7 @@ const critic = {
     { claim: 'AI engineer, agentic AI / RAG / LangGraph', sourceChunk: 'resume-identity', verified: true },
     { claim: 'B.Tech ICT, PDEU, CGPA 8.55/10, May 2027', sourceChunk: 'resume-identity', verified: true },
     { claim: 'MDT AI Copilot: LangGraph, Chroma, Cohere, 8-tool-call cap', sourceChunk: 'mdt-copilot', verified: true },
-    { claim: 'HospitalOps AI: MAE 3.57 vs 6.22 naive baseline', sourceChunk: 'hospitalops', verified: true },
+    { claim: 'HNNOIX intern: z-score anomaly detector, 80%+ recall', sourceChunk: 'resume-hnnoix', verified: true },
     { claim: 'OpenEnv Data Cleaning: co-built with Chetan Gadhiya', sourceChunk: 'openenv', verified: true },
   ],
   passed: true,

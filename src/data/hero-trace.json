@@ -12,35 +12,48 @@
   "retrieval": [
     {
       "id": "resume-identity",
-      "source": "_research/resume.txt",
+      "source": {
+        "label": "resume",
+        "url": null
+      },
       "text": "Hil Kalathiya is an AI Engineer (Fresher) working on Agentic AI, RAG, LangGraph and Multi-Agent Systems. Hil is pursuing a B.Tech in Information and Communication Technology at Pandit Deendayal Energy University (PDEU), CGPA 8.55/10, Jul 2023 - May 2027.",
       "cos": 0.7052,
-      "bm25": 1.1123,
+      "bm25": 5.2026,
       "rrf": 0.03279
     },
     {
-      "id": "openenv",
-      "source": "_research/readmes/open-env-nuclei.md + _research/resume.txt",
-      "text": "Hil Kalathiya co-built the OpenEnv Data Cleaning RL Agent with Chetan Gadhiya (repo is a fork; live demo Space is Chetan's). An OpenEnv environment where an agent cleans a dirty pandas table; agents include a trained PPO policy and a zero-shot LLM agent (Llama 3.1 8B through the Hugging Face router). Pydantic-typed FastAPI environment server containerized and deployed to Hugging Face Spaces.",
-      "cos": 0.2758,
-      "bm25": 0.9462,
-      "rrf": 0.03226
-    },
-    {
-      "id": "hospitalops",
-      "source": "_research/resume.txt + _research/readmes/HospitalOps-AI.md",
-      "text": "Hil Kalathiya's HospitalOps AI is a Bed Demand Forecasting & Resource Optimization project. Leakage-safe forecasting pipeline with chronological splits and true walk-forward cross-validation on two real-world hospital datasets. Benchmarked naive, seasonal-naive, ARIMA/SARIMAX and Prophet, cutting 1-day admission-forecast MAE to 3.57 from a 6.22 naive baseline. Status: running - building a human-in-the-loop LangGraph multi-agent orchestrator with RAG over hospital policies.",
-      "cos": 0.0969,
-      "bm25": 0.6768,
-      "rrf": 0.03126
-    },
-    {
       "id": "mdt-copilot",
-      "source": "_research/readmes/MDT-AI-Copilot.md",
-      "text": "Hil Kalathiya built MDT AI Copilot, an AI analytics and agentic RAG copilot for OpenAirInterface 5G MDT, on the HNNOIX internship codebase. LangGraph create_react_agent, 5 structured tools, Chroma vector store over 4 knowledge documents embedded with Cohere embed-v4.0. Guardrails: max 8 tool calls, 4,000-character tool-output truncation. Anomaly recall >= 80% on the synthetic set.",
-      "cos": 0.1387,
-      "bm25": 0.1346,
-      "rrf": 0.03101
+      "source": {
+        "label": "github.com/HilKalathiya/MDT-AI-Copilot",
+        "url": "https://github.com/HilKalathiya/MDT-AI-Copilot"
+      },
+      "text": "MDT AI Copilot is an AI analytics and agentic RAG copilot for OpenAirInterface 5G MDT, built on the HNNOIX internship codebase. LangGraph create_react_agent, 5 structured tools, Chroma vector store over 4 knowledge documents embedded with Cohere embed-v4.0. Guardrails: max 8 tool calls, 4,000-character tool-output truncation. Anomaly recall >= 80% on the synthetic set.",
+      "cos": 0.0508,
+      "bm25": 0.3807,
+      "rrf": 0.03175
+    },
+    {
+      "id": "openenv",
+      "source": {
+        "label": "github.com/HilKalathiya/open-env-nuclei",
+        "url": "https://github.com/HilKalathiya/open-env-nuclei"
+      },
+      "coBuilt": "Chetan Gadhiya",
+      "text": "OpenEnv Data Cleaning RL Agent: an OpenEnv environment where an agent cleans a dirty pandas table. Agents include a trained PPO policy and a zero-shot LLM agent (Llama 3.1 8B through the Hugging Face router). Pydantic-typed FastAPI environment server containerized and deployed to Hugging Face Spaces.",
+      "cos": 0.151,
+      "bm25": 0,
+      "rrf": 0.03105
+    },
+    {
+      "id": "resume-hnnoix",
+      "source": {
+        "label": "resume",
+        "url": null
+      },
+      "text": "Summer Intern, AI/ML (5G/6G Research & Innovation) at HNNOIX India Private Limited, May-Jul 2026. Built a LangGraph ReAct agent for 5G MDT analytics routing across 5 tools, Chroma retrieval over project docs and C source, Cohere embeddings. Added an 8-tool-call cap and 4,000-character truncation. Designed a per-UE rolling z-score anomaly detector reaching 80%+ recall on injected coverage holes. Built an RSRP forecasting pipeline with GradientBoostingRegressor beating a naive baseline.",
+      "cos": 0.1125,
+      "bm25": 0,
+      "rrf": 0.03102
     }
   ],
   "toolCalls": [
@@ -83,8 +96,8 @@
         "verified": true
       },
       {
-        "claim": "HospitalOps AI: MAE 3.57 vs 6.22 naive baseline",
-        "sourceChunk": "hospitalops",
+        "claim": "HNNOIX intern: z-score anomaly detector, 80%+ recall",
+        "sourceChunk": "resume-hnnoix",
         "verified": true
       },
       {
@@ -96,7 +109,7 @@
     "passed": true
   },
   "answer": {
-    "text": "Hil Kalathiya is an AI engineer focused on agentic AI, RAG, and multi-agent systems built with LangGraph. He is a B.Tech student in Information & Communication Technology at Pandit Deendayal Energy University (CGPA 8.55/10, graduating May 2027). His work includes MDT AI Copilot, a LangGraph agentic-RAG copilot for 5G network analytics with Chroma and Cohere retrieval, capped at 8 tool calls; HospitalOps AI, a hospital-demand forecasting pipeline that cuts admission-forecast MAE to 3.57 from a 6.22 naive baseline; and OpenEnv Data Cleaning, a reinforcement-learning environment he co-built with Chetan Gadhiya.",
+    "text": "Hil Kalathiya is an AI engineer focused on agentic AI, RAG, and multi-agent systems built with LangGraph. He is a B.Tech student in Information & Communication Technology at Pandit Deendayal Energy University (CGPA 8.55/10, graduating May 2027). As a summer 2026 intern at HNNOIX he built MDT AI Copilot, a LangGraph agentic-RAG copilot for 5G network analytics with Chroma and Cohere retrieval, capped at 8 tool calls, plus a rolling z-score anomaly detector reaching 80%+ recall on injected coverage holes. He also co-built OpenEnv Data Cleaning, a reinforcement-learning environment, with Chetan Gadhiya.",
     "tokens": [
       {
         "id": 120912,
@@ -347,16 +360,60 @@
         "text": ")."
       },
       {
-        "id": 7792,
-        "text": " His"
+        "id": 1877,
+        "text": " As"
       },
       {
-        "id": 1101,
-        "text": " work"
+        "id": 261,
+        "text": " a"
       },
       {
-        "id": 6664,
-        "text": " includes"
+        "id": 9333,
+        "text": " summer"
+      },
+      {
+        "id": 220,
+        "text": " "
+      },
+      {
+        "id": 1323,
+        "text": "202"
+      },
+      {
+        "id": 21,
+        "text": "6"
+      },
+      {
+        "id": 2693,
+        "text": " intern"
+      },
+      {
+        "id": 540,
+        "text": " at"
+      },
+      {
+        "id": 487,
+        "text": " H"
+      },
+      {
+        "id": 45,
+        "text": "N"
+      },
+      {
+        "id": 14695,
+        "text": "NO"
+      },
+      {
+        "id": 8996,
+        "text": "IX"
+      },
+      {
+        "id": 501,
+        "text": " he"
+      },
+      {
+        "id": 8113,
+        "text": " built"
       },
       {
         "id": 183675,
@@ -495,132 +552,96 @@
         "text": " calls"
       },
       {
-        "id": 26,
-        "text": ";"
-      },
-      {
-        "id": 17378,
-        "text": " Hospital"
-      },
-      {
-        "id": 40217,
-        "text": "Ops"
-      },
-      {
-        "id": 20837,
-        "text": " AI"
-      },
-      {
         "id": 11,
         "text": ","
       },
       {
-        "id": 261,
-        "text": " a"
-      },
-      {
-        "id": 10824,
-        "text": " hospital"
-      },
-      {
-        "id": 74085,
-        "text": "-demand"
-      },
-      {
-        "id": 115626,
-        "text": " forecasting"
-      },
-      {
-        "id": 29412,
-        "text": " pipeline"
-      },
-      {
-        "id": 484,
-        "text": " that"
-      },
-      {
-        "id": 29505,
-        "text": " cuts"
-      },
-      {
-        "id": 30425,
-        "text": " admission"
-      },
-      {
-        "id": 12,
-        "text": "-"
-      },
-      {
-        "id": 120983,
-        "text": "forecast"
-      },
-      {
-        "id": 12615,
-        "text": " MA"
-      },
-      {
-        "id": 36,
-        "text": "E"
-      },
-      {
-        "id": 316,
-        "text": " to"
-      },
-      {
-        "id": 220,
-        "text": " "
-      },
-      {
-        "id": 18,
-        "text": "3"
-      },
-      {
-        "id": 13,
-        "text": "."
-      },
-      {
-        "id": 5085,
-        "text": "57"
-      },
-      {
-        "id": 591,
-        "text": " from"
+        "id": 2932,
+        "text": " plus"
       },
       {
         "id": 261,
         "text": " a"
       },
       {
+        "id": 30530,
+        "text": " rolling"
+      },
+      {
+        "id": 579,
+        "text": " z"
+      },
+      {
+        "id": 165048,
+        "text": "-score"
+      },
+      {
+        "id": 139959,
+        "text": " anomaly"
+      },
+      {
+        "id": 51124,
+        "text": " detector"
+      },
+      {
+        "id": 29787,
+        "text": " reaching"
+      },
+      {
         "id": 220,
         "text": " "
       },
       {
-        "id": 21,
-        "text": "6"
+        "id": 2241,
+        "text": "80"
+      },
+      {
+        "id": 4,
+        "text": "%"
+      },
+      {
+        "id": 10,
+        "text": "+"
+      },
+      {
+        "id": 30890,
+        "text": " recall"
+      },
+      {
+        "id": 402,
+        "text": " on"
+      },
+      {
+        "id": 73256,
+        "text": " injected"
+      },
+      {
+        "id": 13422,
+        "text": " coverage"
+      },
+      {
+        "id": 30416,
+        "text": " holes"
       },
       {
         "id": 13,
         "text": "."
       },
       {
-        "id": 1709,
-        "text": "22"
+        "id": 1679,
+        "text": " He"
       },
       {
-        "id": 105687,
-        "text": " naive"
+        "id": 1217,
+        "text": " also"
       },
       {
-        "id": 51356,
-        "text": " baseline"
+        "id": 1407,
+        "text": " co"
       },
       {
-        "id": 26,
-        "text": ";"
-      },
-      {
-        "id": 326,
-        "text": " and"
+        "id": 78918,
+        "text": "-built"
       },
       {
         "id": 7788,
@@ -659,16 +680,8 @@
         "text": " environment"
       },
       {
-        "id": 501,
-        "text": " he"
-      },
-      {
-        "id": 1407,
-        "text": " co"
-      },
-      {
-        "id": 78918,
-        "text": "-built"
+        "id": 11,
+        "text": ","
       },
       {
         "id": 483,

@@ -22,3 +22,10 @@
 - Build fails if top-1 for the hero query is not `resume-identity`, or if a critic check cites a chunk not displayed. Identity chunk reworded as plain "Hil Kalathiya is …" (no query stuffing); answer/critic now cite only the top-4 (identity, openenv, hospitalops, mdt-copilot).
 - UI (`HeroTrace.tsx`): `cos 0.71 · bm25 1.11 · rrf 0.033` in muted. Act 0 chunk count now `trace.corpusSize` (7). transformers is a devDependency; first-paint JS unchanged (client 65.7KB gz).
 - Open: onnxruntime-node postinstall not approved by npm allowScripts (works anyway); first build needs network to fetch the model.
+
+## Hero layout pass
+- `HeroTrace.tsx`: two-column ≥1024px (left trace, right answer at clamp 20–30px under a "Hil Kalathiya · AI Engineer · Agentic AI, RAG, LangGraph" line); mobile = answer first, trace below. Verified via headless Chrome at 1440×900 and a true 390px iframe: answer above the fold, no horizontal overflow.
+- Pills replaced by an SVG graph (horizontal ≥640px, vertical below): done = muted + ✓, running = amber, dot travels the incoming edge via SMIL while a step runs, only `answer` stays amber at the end. Chunks are native `<details>` (collapsed one-liner: id · scores; expand for text + public source link). Chunk text de-prefixed; `source` = repo URL / "resume" / "design notes"; `coBuilt` label for openenv and crohnsight.
+- With de-prefixed chunk text, top-4 became identity, mdt-copilot, openenv, resume-hnnoix, so the answer/critic now cite those (HospitalOps no longer in the hero answer — it ranks 5th).
+- Telemetry strip wraps and drops cost/run <640px; `public/favicon.svg` (mono "h") added. package.json astro `^7.3.8`; npm audit 0.
+- Open: this machine's Node is 22.17.0 (not 22.23), so Astro 7.4.x refuses to build here; lockfile stays on 7.3.8 — run `npm update astro @astrojs/react` on the 22.23 machine.
