@@ -1,0 +1,16 @@
+/* "Leave Hil a message" form, in the v0.6 tokens */
+.cform{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; margin-top:28px; padding:clamp(16px,2.4vw,24px); border-radius:14px; background:var(--surface); box-shadow:inset 0 0 0 1px var(--line); position:relative; pointer-events:auto}
+.cform label{display:flex; flex-direction:column; gap:7px}
+.cform .k{font-family:var(--mono); font-size:12px; color:var(--muted)}
+.cform .full{grid-column:1 / -1}
+.cform input, .cform textarea{box-sizing:border-box; width:100%; font:400 15.5px/1.5 var(--sans); color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:11px 13px; resize:vertical; transition:border-color .2s}
+.cform input::placeholder, .cform textarea::placeholder{color:var(--muted); opacity:.75}
+.cform input:focus, .cform textarea:focus{outline:none; border-color:var(--agent, var(--ink))}
+.cform .hp{position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden}
+.cform .crow{display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+.cform .hint{font-family:var(--mono); font-size:12.5px; color:var(--muted)}
+.cform .btn:disabled{opacity:.6; cursor:progress}
+.cform .note{min-height:1.4em; font-family:var(--mono); font-size:12.5px; color:var(--muted)}
+.cform .note.ok{color:var(--ok, var(--ink))}
+.cform .note a{color:var(--agent-ink, var(--ink))}
+@media (max-width: 560px){ .cform{grid-template-columns:minmax(0,1fr)} }

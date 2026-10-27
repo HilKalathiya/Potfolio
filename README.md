@@ -1,11 +1,11 @@
-# hil·attention
+# hil.agent
 
-Portfolio site for **Hil Kalathiya**, AI engineer. The page treats his story as a transformer:
-the hero is a tokenised prompt with live attention arcs, his career is a sequence where every
-step attends to earlier ones, and his five projects are attention heads, each drawn as its real
-system design with click-to-inspect.
+Portfolio site for **Hil Kalathiya**, AI engineer. Every system he built is drawn as the agent
+graph it runs on (Three.js), with click-to-inspect parts, and four agents (planner, scout,
+verifier, scribe) work across the page. Dark and light mode, phone layout, one-page résumé
+download (no phone number), and a contact form that lands in his private inbox.
 
-Static site built with [Vite](https://vite.dev). No framework, no runtime dependencies.
+Static site built with [Vite](https://vite.dev). Three.js is bundled from npm; Lenis is self-hosted.
 
 ## Run it
 
@@ -20,11 +20,10 @@ npm run preview   # serve dist/
 
 | Path | What it is |
 | --- | --- |
-| `index.html` | Page markup and section structure |
-| `src/main.js` | Token arcs, decoding panel, sequence scroll, heads, inspector, theme |
-| `src/contact-form.js` | "Leave Hil a message" form |
-| `src/style.css` | All styles, light and dark themes as CSS tokens |
-| `public/` | Résumé PDF (no phone number), résumé preview, portrait, favicon, OG image |
+| `index.html` | The whole page: markup, styles, the page layer and the 3D graph scene |
+| `src/form.js`, `src/form.css` | "Leave Hil a message" form |
+| `inbox.html`, `src/contact/inbox.js` | Hil's private inbox (`/inbox`) |
+| `public/` | Résumé PDF (no phone number), résumé preview, Lenis, favicon, OG image |
 
 ## Contact form
 

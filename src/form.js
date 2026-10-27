@@ -1,24 +1,26 @@
 /* Contact form. Posts JSON to VITE_CONTACT_ENDPOINT (a Supabase RPC, see README).
    With no endpoint configured it falls back to Gmail compose. */
+import './form.css';
 const ENDPOINT = import.meta.env.VITE_CONTACT_ENDPOINT || '';
 const KEY = import.meta.env.VITE_CONTACT_KEY || '';
 const EMAIL = 'hilkalathiya59@gmail.com';
 
-export function gmailLink({ subject = 'Hello Hil', body = '' } = {}) {
+function gmailLink({ subject = 'Hello Hil', body = '' } = {}) {
   const q = new URLSearchParams({ view: 'cm', fs: '1', to: EMAIL, su: subject });
   if (body) q.set('body', body);
   return 'https://mail.google.com/mail/?' + q.toString();
 }
 
-export function initContactForm() {
+function initContactForm() {
   const form = document.getElementById('contactForm');
   if (!form) return;
   const note = document.getElementById('formNote');
   const count = document.getElementById('tokCount');
   const btn = form.querySelector('button[type=submit]');
+  const label = btn.textContent;
   const shownAt = performance.now();
 
-  // a rough "token" count, about 4 characters each, to keep the attention theme
+  // a rough token count, about 4 characters each
   const msg = form.elements.message;
   msg.addEventListener('input', () => {
     const n = Math.ceil(msg.value.trim().length / 4);
@@ -42,7 +44,7 @@ export function initContactForm() {
       say('Opened Gmail with your message filled in.', true);
       return;
     }
-    btn.disabled = true; btn.textContent = 'sending…';
+    btn.disabled = true; btn.textContent = 'Sending…';
     try {
       const headers = { 'Content-Type': 'application/json' };
       if (KEY) headers.apikey = KEY;
@@ -52,7 +54,7 @@ export function initContactForm() {
       });
       if (res.ok) {
         form.reset(); count.textContent = '0 tokens';
-        say('✓ Sent. Hil will get back to you at the email you gave. <span class="grad">&lt;eos&gt;</span>', true);
+        say('✓ Sent. Hil will reply to the email you gave.', true);
       } else {
         let m = ''; try { m = (await res.json()).message || ''; } catch (_) {}
         const esc = t => t.replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
@@ -64,7 +66,8 @@ export function initContactForm() {
     } catch (_) {
       say('Could not reach the inbox. ' + fallback(data));
     } finally {
-      btn.disabled = false; btn.textContent = 'send ↵';
+      btn.disabled = false; btn.textContent = label;
     }
   });
 }
+initContactForm();
