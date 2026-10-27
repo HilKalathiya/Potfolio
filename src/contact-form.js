@@ -55,7 +55,11 @@ export function initContactForm() {
         say('✓ Sent. Hil will get back to you at the email you gave. <span class="grad">&lt;eos&gt;</span>', true);
       } else {
         let m = ''; try { m = (await res.json()).message || ''; } catch (_) {}
-        say((/rate|too many/i.test(m) ? 'Too many messages for now. ' : 'That did not go through. ') + fallback(data));
+        const esc = t => t.replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
+        const lead = res.status === 429 ? 'Too many messages for now. '
+          : res.status === 400 && m ? esc(m) + ' '
+          : 'That did not go through. ';
+        say(lead + fallback(data));
       }
     } catch (_) {
       say('Could not reach the inbox. ' + fallback(data));
