@@ -1778,6 +1778,8 @@ const M = {
 const ringCol = c => new THREE.Color(c === 'ok' ? P.ringO : c === 'mute' ? P.ringM : P.ringA);
 const C = { agent:new THREE.Color(P.agent), amber:new THREE.Color(P.human), ok:new THREE.Color(P.ok), trace:new THREE.Color(P.trace), led:new THREE.Color(P.led), amb:new THREE.Color(P.packetAmb), mute:new THREE.Color(P.muted) };
 const FT = .1, HD = 1.5;
+/* each graph floats above its board: parts, wires and packets ride a layer LIFT above the slab */
+const LIFT = .62;
 
 /* every canvas texture remembers how to draw itself, so a theme change repaints it */
 const jobs = [];
@@ -2016,7 +2018,7 @@ function buildPart(B, m, i){
     const blob = new THREE.Mesh(new THREE.PlaneGeometry(o.w*1.3 + .3, o.d*1.3 + .3), new THREE.MeshBasicMaterial({ map:shadowBlob, transparent:true, opacity:.14, depthWrite:false }));
     blob.rotation.x = -Math.PI/2; blob.position.y = .004; g.add(blob); o.blob = blob;
     if(o.body){ o.body.userData.o = o; pick.push(o.body); }
-    B.g.add(g);
+    (B.lay || B.g).add(g);
   }
   if(T === 'io') o.title = (m.tg === 'MCP' ? 'MCP server · ' : '') + m.s;
   if(T === 'ghost') o.title = m.n + ' (planned)';
@@ -2125,7 +2127,7 @@ function edgeLabel(B, w, text, t){
     x.fillStyle = P.ink2; x.font = `500 ${LFS*LPU}px ${MONO}`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, W/2, H*.54);
   }), transparent:true, opacity:0, depthWrite:false, polygonOffset:true, polygonOffsetFactor:-3, polygonOffsetUnits:-3 });
   const p = new THREE.Mesh(new THREE.PlaneGeometry(lw, h), mat); p.rotation.x = -Math.PI/2;
-  const [x, z] = at(w, w.len*t); p.position.set(x, FT + .012, z); p.renderOrder = 2; B.g.add(p);
+  const [x, z] = at(w, w.len*t); p.position.set(x, FT + .012, z); p.renderOrder = 2; B.lay.add(p);
   return mat;
 }
 const arrowGeo = (() => { const s = new THREE.Shape(); s.moveTo(0, 0); s.lineTo(-.3, .14); s.lineTo(-.3, -.14); s.closePath(); const g = new THREE.ShapeGeometry(s); g.rotateX(-Math.PI/2); return g; })();
@@ -2140,9 +2142,9 @@ function addWire(B, aId, bId, opt){
   P = cutEnd(P, .28);
   const cum = cumOf(full);
   const mat = new THREE.MeshBasicMaterial({ color:C.trace.clone(), transparent:true, opacity:0, depthWrite:false, side:THREE.DoubleSide });
-  const mesh = new THREE.Mesh(opt.dash ? ribbonN(dashes(P, .22, .16), .036) : ribbon(P, .04), mat); mesh.position.y = FT + .004; mesh.renderOrder = 1; B.g.add(mesh);
-  const ar = new THREE.Mesh(arrowGeo, mat); ar.position.set(end[0], FT + .005, end[1]); ar.rotation.y = -Math.atan2(end[1] - pre[1], end[0] - pre[0]); B.g.add(ar);
-  const pt = new THREE.Mesh(portGeo, mat); pt.position.set(full[0][0], FT + .005, full[0][1]); B.g.add(pt);
+  const mesh = new THREE.Mesh(opt.dash ? ribbonN(dashes(P, .22, .16), .036) : ribbon(P, .04), mat); mesh.position.y = FT + .004; mesh.renderOrder = 1; B.lay.add(mesh);
+  const ar = new THREE.Mesh(arrowGeo, mat); ar.position.set(end[0], FT + .005, end[1]); ar.rotation.y = -Math.atan2(end[1] - pre[1], end[0] - pre[0]); B.lay.add(ar);
+  const pt = new THREE.Mesh(portGeo, mat); pt.position.set(full[0][0], FT + .005, full[0][1]); B.lay.add(pt);
   const w = { a:aId, b:bId, P:full, cum, len:cum[cum.length - 1], mat, heat:0, col:C.agent, l:opt.l || '' };
   if(opt.l) w.lab = edgeLabel(B, w, opt.l, opt.lt ?? .5);
   B.wires.push(w);
@@ -2226,7 +2228,11 @@ HK.setLoad(.5);
 function makeBoard(b){
   const B = { b, g:new THREE.Group(), mods:{}, list:[], wires:[], boot:-1, running:false, amb:0 };
   B.g.position.set(b.px, 0, b.pz); scene.add(B.g); boards[b.id] = B;
+  B.lay = new THREE.Group(); B.lay.position.y = LIFT; B.g.add(B.lay);
   b.mods.forEach((m, i) => { const o = buildPart(B, m, i); B.mods[m.id] = o; B.list.push(o); });
+  { const M = .5; let ax = 0, z0 = Infinity, z1 = -Infinity;
+    for(const o of B.list){ ax = Math.max(ax, Math.abs(o.m.x) + o.w/2); z0 = Math.min(z0, o.m.z - o.d/2); z1 = Math.max(z1, o.m.z + o.d/2); }
+    if(B.list.length){ b.w = Math.max(b.w, 2*(ax + M)); b.d = Math.max(b.d, 2*(z1 + M), 2*(M - z0 - HD)); } }
   buildFrame(B);
   for(const [a, c, opt] of b.wires || []) addWire(B, a, c, opt || {});
   return B;
@@ -2244,7 +2250,7 @@ for(const b of HK.BOARDS){ makeBoard(b); await sleep(0); }
 HK.setLoad(.75);
 
 const trB = { b:{ id:'traj', px:0, pz:0, w:0, d:0, title:'journey' }, g:new THREE.Group(), mods:{}, list:[], wires:[], boot:0, running:false, amb:0, traj:true };
-scene.add(trB.g); boards.traj = trB;
+scene.add(trB.g); boards.traj = trB; trB.lay = trB.g;
 function trPart(m){ const o = buildPart(trB, m, trB.list.length); trB.mods[m.id] = o; trB.list.push(o); return o; }
 const yrJobs = [];
 TR.st.forEach((s, i) => {
@@ -2368,7 +2374,7 @@ function stepPackets(dt){
     if(p.s < 0 || n >= MAXP) continue;
     const [x, z, a] = at(p.w, p.rev ? p.w.len - p.s : p.s);
     const base = p.B ? p.B.g.position : null;
-    dummy.position.set((base ? base.x : 0) + x, (p.B ? FT + .05 : .05), (base ? base.z : 0) + z);
+    dummy.position.set((base ? base.x : 0) + x, (p.B ? FT + .05 + p.B.lay.position.y : .05), (base ? base.z : 0) + z);
     dummy.rotation.set(0, -a, 0); dummy.updateMatrix();
     pk.setMatrixAt(n, dummy.matrix); pk.setColorAt(n, p.col); n++;
     if(p.msg){ V.copy(dummy.position).project(cam); p.msg.el.classList.add('on'); p.msg.el.style.transform = `translate(${(V.x + 1)/2*W}px, ${(1 - V.y)/2*H}px) translate(-50%, -150%)`; }
@@ -2393,7 +2399,7 @@ const API = {
   display(id, k, s){ const o = boards[id]?.mods[k]; if(o?.draw) o.draw(s); },
   where(id, k){
     const B = boards[id], o = B?.mods[k]; if(!o) return null;
-    V.set(B.g.position.x + o.g.position.x, o.g.position.y + o.h, B.g.position.z + o.g.position.z).project(cam);
+    V.set(B.g.position.x + o.g.position.x, o.g.position.y + o.h + B.lay.position.y, B.g.position.z + o.g.position.z).project(cam);
     return { x:(V.x + 1)/2*W, y:(1 - V.y)/2*H, on:V.z < 1 && Math.abs(V.x) < 1.05 && Math.abs(V.y) < 1.05 };
   },
   send(id, a, b, kind, label){
@@ -2436,13 +2442,14 @@ function fitBox(cx, cz, w, d, hy, yaw = YAW, el = EL){
     const p = new THREE.Vector3(sx*w/2, y, sz*d/2); ex = Math.max(ex, Math.abs(p.dot(BASIS.r))); ey = Math.max(ey, Math.abs(p.dot(BASIS.u)));
   }
   const [x0, x1, y0, y1] = region(), th = Math.tan(FOV/2*Math.PI/180), asp = W/H;
-  const dist = Math.max(ey/(th*(y1 - y0)), ex/(th*asp*(x1 - x0)))*1.06;
+  const dist = Math.max(ey/(th*(y1 - y0)), ex/(th*asp*(x1 - x0)))*1.15;
   return { tgt, dist, cx:(x0 + x1)/2, cy:(y0 + y1)/2, yaw, el };
 }
+const ANG = { hero:[24, 44], mdt:[-16, 46], openenv:[18, 45], hospital:[-16, 46], ectd:[18, 45], crohn:[-9, 47], _:[12, 48] };
 function resolve(v){
   if(v.traj != null){ const s = TR.views[v.traj]; return fitBox(s.cx, s.cz, s.w, s.d, .6, s.yaw*D2R, s.el*D2R); }
-  const B = boards[v.b], b = B.b, f = v.f || [0, -HD/2, b.w, b.d + HD];
-  return fitBox(b.px + f[0], b.pz + f[1], f[2], f[3], b.sealed ? 1 : .55);
+  const B = boards[v.b], b = B.b, f = v.f || [0, -HD/2, b.w, b.d + HD], a = ANG[b.id] || ANG._;
+  return fitBox(b.px + f[0], b.pz + f[1], f[2], f[3], (b.sealed ? 1 : .55) + LIFT, a[0]*D2R, a[1]*D2R);
 }
 function goal(){
   if(HK.override) return resolve(HK.override);
@@ -2469,7 +2476,8 @@ function stepCam(dt){
   const k = 1 - Math.exp(-dt*(HK.RM ? 40 : 3.6));
   cur.tgt.lerp(g.tgt, k); cur.dist += (g.dist - cur.dist)*k; cur.cx += (g.cx - cur.cx)*k; cur.cy += (g.cy - cur.cy)*k; cur.yaw += (g.yaw - cur.yaw)*k; cur.el += (g.el - cur.el)*k;
   const km = 1 - Math.exp(-dt*2.5); mouse.sx += (mouse.x - mouse.sx)*km; mouse.sy += (mouse.y - mouse.sy)*km;
-  const d = dirOf(cur.yaw + (HK.RM ? 0 : mouse.sx*.045), cur.el + (HK.RM ? 0 : mouse.sy*.025));
+  const drift = HK.RM ? 0 : Math.sin(now()/6000)*.035;
+  const d = dirOf(cur.yaw + drift + (HK.RM ? 0 : mouse.sx*.09), cur.el + (HK.RM ? 0 : mouse.sy*.05));
   cam.position.copy(cur.tgt).addScaledVector(d, cur.dist); cam.lookAt(cur.tgt);
   cam.setViewOffset(W, H, -(cur.cx - .5)*W, -(cur.cy - .5)*H, W, H);
   cam.updateMatrixWorld();
@@ -2519,6 +2527,7 @@ function stepParts(dt, t){
     B.g.visible = !far || B.traj;
     if(far && !B.traj) continue;
     const bt = B.traj ? 9 : (B.boot < 0 ? -1 : (t - B.boot)/1000);
+    if(!B.traj) B.lay.position.y = LIFT + (HK.RM ? 0 : Math.sin(t/1500 + B.b.pz*.1)*.05);
     for(const w of B.wires){
       w.heat = Math.max(0, w.heat - dt/1.6);
       w.mat.opacity = bt < 0 ? 0 : clamp((bt - .35)/.6);
@@ -2532,11 +2541,12 @@ function stepParts(dt, t){
       o.flash = Math.max(0, (o.flash || 0) - dt*1.6);
       if(!B.traj || o.acq == null){
         const k = bt < 0 ? 0 : clamp((bt - o.i*.03)/.55);
-        if(!B.traj){ o.g.visible = k > 0; const e = 1 - (k >= 1 ? 1 : backOut(k)); o.g.position.y = FT + e*1.4 + o.hov*.06 + (o === tok.o ? .1 : 0); }
+        if(!B.traj){ o.g.visible = k > 0; const e = 1 - (k >= 1 ? 1 : backOut(k)); o.g.position.y = FT + e*1.4 + o.hov*.32 + (HK.RM ? 0 : Math.sin(t/820 + o.i*1.7)*.06) + (o === tok.o ? .1 : 0);
+          if(o.blob){ const up = o.g.position.y + B.lay.position.y - FT; o.blob.position.y = .004 - up; o.blob.material.opacity = .26/(1 + up*.8); } }
         else o.g.position.y = FT + o.hov*.08 + (o === tok.o ? .1 : 0);
       }
       const lit = Math.max(o.act, o.flash || 0, o.wait*(.5 + .5*Math.sin(t/180)));
-      if(o.halo){ o.halo.material.color.copy(o.haloAmber || o.wait ? C.amber : C.agent); o.halo.material.opacity = (o.g.visible ? 1 : 0)*Math.min(1, lit*.95 + o.hov*.8); }
+      if(o.halo){ o.halo.material.color.copy(o.haloAmber || o.wait ? C.amber : C.agent); o.halo.material.opacity = (o.g.visible ? 1 : 0)*Math.min(1, lit*.95 + o.hov*.8 + (B.traj ? 0 : .22)); }
       if(o.led) o.led.material.color.copy(C.led).lerp(o.wait ? C.amber : C.agent, clamp(lit + o.think));
       if(o.ring){ o.ring.rotation.z -= dt*(.35 + (o.think + (B.b.id === 'hero' ? .25 : 0))*2.6); }
       if(o.btnMat) o.btnMat.emissiveIntensity = .04 + .5*Math.max(o.wait*(.5 + .5*Math.sin(t/160)), o.flash || 0);
