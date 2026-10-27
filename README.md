@@ -30,7 +30,7 @@ npm run preview   # serve dist/
 
 The form POSTs JSON `{ name, email, message, website, elapsed_ms, page }` to
 `VITE_CONTACT_ENDPOINT` (a Supabase RPC). `website` is a honeypot. When `VITE_CONTACT_KEY`
-is set it is sent as `apikey` and `Authorization: Bearer` headers (it is the public anon key).
+is set it is sent as the `apikey` header (it is the public publishable key).
 If no endpoint is configured, the form opens Gmail compose with the message filled in, and on
 any error it offers that link as a fallback.
 

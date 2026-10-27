@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Inbox · hil·attention</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,300..900&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<script>try { const t = localStorage.getItem('hil-attn-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<style>
+/* Hil's private inbox. Same tokens as the hil·attention site, so both themes match. */
+:root{
+  --bg:#F2F3F7; --surface:#FFFFFF; --ink:#0E1120; --muted:#5B6077; --line:rgba(14,17,32,.13);
+  --a1:#4A2DFF; --a2:#D41C7C; --a3:#E98300; --onA:#FFFFFF; --err:#C4221C;
+  --display:"Anybody", "Arial Narrow", system-ui, sans-serif;
+  --sans:"Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0A0B13; --surface:#131525; --ink:#ECEEF8; --muted:#9398B2; --line:rgba(236,238,248,.13);
+  --a1:#8E7DFF; --a2:#FF4FA7; --a3:#FFB23E; --onA:#0A0B13; --err:#FF6B63; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0A0B13; --surface:#131525; --ink:#ECEEF8; --muted:#9398B2; --line:rgba(236,238,248,.13);
+  --a1:#8E7DFF; --a2:#FF4FA7; --a3:#FFB23E; --onA:#0A0B13; --err:#FF6B63; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.wrap{max-width:880px;margin:0 auto}
+a{color:inherit}
+[hidden]{display:none !important}
+.lbl{font:500 12px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.grad{background:linear-gradient(90deg,var(--a1),var(--a2) 55%,var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent}
+:focus-visible{outline:2.5px solid var(--a1);outline-offset:3px;border-radius:6px}
+
+.bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding-block:12px;
+  background:color-mix(in srgb, var(--bg) 88%, transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.logo{font:800 18px/1 var(--display);font-variation-settings:"wdth" 120;letter-spacing:-.01em;white-space:nowrap;text-decoration:none}
+.logo span{color:var(--a2)}
+.bar .sp{margin-left:auto}
+.bar .lbl{white-space:nowrap}
+.ib{font:600 13px/1 var(--mono);color:var(--ink);background:transparent;border:1.5px solid var(--ink);border-radius:999px;padding:8px 12px;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.ib:hover{background:var(--ink);color:var(--bg)}
+.ib.solid{background:var(--ink);color:var(--bg)}
+.ib.solid:hover{background:var(--a1);border-color:var(--a1);color:var(--onA)}
+.ib.quiet{border-color:var(--line)}
+.ib.danger:hover{background:var(--err);border-color:var(--err);color:#fff}
+.ib:disabled{opacity:.5;cursor:default}
+
+h1{font:900 clamp(48px,11vw,104px)/.9 var(--display);font-variation-settings:"wdth" 72;letter-spacing:-.03em;margin:28px 0 8px}
+.sub{color:var(--muted);margin:0 0 26px}
+
+/* sign in */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px}
+.signin{max-width:420px}
+.field{display:grid;gap:6px;margin-bottom:14px}
+.field input{font:16px/1.3 var(--sans);color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;width:100%}
+.field input:focus{border-color:var(--a1);outline:none}
+.note{font:13px/1.45 var(--mono);color:var(--muted);margin-top:12px;min-height:1em}
+.note.err{color:var(--err)}
+
+/* toolbar */
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
+.tabs button{font:500 13px/1 var(--mono);color:var(--muted);background:none;border:0;border-radius:999px;padding:8px 12px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tabs b{font-weight:700;color:var(--a2);margin-left:4px}
+.tabs button[aria-pressed="true"] b{color:inherit}
+.tools input{font:14px/1.2 var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:9px 14px;min-width:0;flex:1 1 180px}
+.tools input:focus{border-color:var(--a1);outline:none}
+
+/* messages */
+.list{display:grid;gap:12px;padding-bottom:60px}
+.msg{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.msg.unread{border-color:color-mix(in srgb, var(--a1) 55%, var(--line))}
+.msg.unread::before{content:"";position:absolute;left:-1px;top:18px;bottom:18px;width:3px;border-radius:3px;background:linear-gradient(var(--a1),var(--a2))}
+.mh{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.who{font:780 22px/1.15 var(--display);font-variation-settings:"wdth" 90;margin:0}
+.from{font:13px/1.4 var(--mono);color:var(--a1);word-break:break-all}
+.when{margin-left:auto;font:12px/1.4 var(--mono);color:var(--muted);white-space:nowrap}
+.body{white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0 14px;font-size:16px}
+.msg:not(.open) .body{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.more{font:500 12px/1 var(--mono);color:var(--muted);background:none;border:0;padding:0 0 12px;cursor:pointer;text-decoration:underline}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.meta{font:11.5px/1.4 var(--mono);color:var(--muted);margin-top:12px}
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty b{display:block;font:900 56px/1 var(--display);font-variation-settings:"wdth" 70;margin-bottom:10px}
+
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);z-index:60;
+  background:var(--ink);color:var(--bg);font:13px/1.4 var(--mono);padding:10px 16px;border-radius:999px;box-shadow:0 14px 30px -14px rgba(10,11,19,.6)}
+
+@media (max-width:560px){
+  .when{margin-left:0;width:100%}
+  .msg{padding:16px}
+  .acts .ib{flex:1 1 auto;justify-content:center}
+}
+</style>
+</head>
+<body>
+<header class="bar wrap">
+  <a class="logo" href="/">hil<span>·</span>attention</a>
+  <span class="lbl">/ inbox</span>
+  <span class="sp"></span>
+  <button class="ib quiet" id="themeBtn" type="button" aria-label="Switch colour theme">◐</button>
+  <button class="ib" id="outBtn" type="button" hidden>Sign out</button>
+</header>
+
+<main class="wrap">
+  <h1><span class="grad">inbox</span></h1>
+  <p class="sub" id="sub">Messages people sent from the contact form. Only you can see them.</p>
+
+  <section id="signin" hidden>
+    <form class="card signin" id="signinForm">
+      <div class="field"><label class="lbl" for="em">Email</label><input id="em" type="email" autocomplete="username" required></div>
+      <div class="field"><label class="lbl" for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
+      <button class="ib solid" type="submit" id="inBtn">Sign in →</button>
+      <div class="note" id="inNote" role="status"></div>
+    </form>
+  </section>
+
+  <section id="setup" hidden>
+    <div class="card">
+      <p style="margin-top:0"><b>The inbox is not connected yet.</b></p>
+      <p class="sub" style="margin:0">Set VITE_SUPABASE_URL (or VITE_CONTACT_ENDPOINT) and VITE_CONTACT_KEY in the site's environment, then deploy again. The steps are in the contact setup guide.</p>
+    </div>
+  </section>
+
+  <section id="box" hidden>
+    <div class="tools">
+      <div class="tabs" role="group" aria-label="Show">
+        <button type="button" data-tab="inbox" aria-pressed="true">Inbox<b id="unread"></b></button>
+        <button type="button" data-tab="archived" aria-pressed="false">Archived</button>
+      </div>
+      <input id="q" type="search" placeholder="Search name, email or text" aria-label="Search messages">
+      <button class="ib quiet" id="refreshBtn" type="button">↻ Refresh</button>
+    </div>
+    <div class="list" id="list" aria-live="polite"></div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script type="module" src="/src/contact/inbox.js"></script>
+</body>
+</html>

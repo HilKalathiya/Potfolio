@@ -45,7 +45,7 @@ export function initContactForm() {
     btn.disabled = true; btn.textContent = 'sending…';
     try {
       const headers = { 'Content-Type': 'application/json' };
-      if (KEY) { headers.apikey = KEY; headers.Authorization = 'Bearer ' + KEY; }
+      if (KEY) headers.apikey = KEY;
       const res = await fetch(ENDPOINT, {
         method: 'POST', headers,
         body: JSON.stringify({ ...data, elapsed_ms: Math.round(performance.now() - shownAt), page: location.pathname }),
