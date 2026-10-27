@@ -100,8 +100,9 @@ html.ready #loader{opacity:0; visibility:hidden}
 .top > *{pointer-events:auto}
 .top::before{content:""; position:absolute; inset:0 0 -28px 0; z-index:-1; background:linear-gradient(var(--bg) 52%, var(--bg-a0)); pointer-events:none}
 .brand{display:inline-flex; align-items:center; gap:10px; font-family:var(--mono); font-weight:600; font-size:14px; text-decoration:none; letter-spacing:-.01em; color:var(--ink)}
-.brand i{position:relative; width:20px; height:20px; border-radius:6px; background:var(--ink)}
-.brand i::after{content:""; position:absolute; inset:5px; border-radius:50%; border:2px solid var(--agent)}
+.mark{flex:none; width:24px; height:24px; transition:transform .12s var(--ex)}
+.mark .k0{fill:var(--ink)} .mark .k1{fill:color-mix(in srgb, var(--ink) 82%, var(--bg))} .mark .gl{fill:none; stroke:var(--bg); stroke-width:4.2; stroke-linecap:round; stroke-linejoin:round} .mark .nd{fill:var(--bg)} .mark .hd{fill:var(--agent)}
+.brand:active .mark{transform:translateY(1.5px)}
 .presence{display:inline-flex; align-items:center; gap:9px; font-family:var(--mono); font-size:12.5px; color:var(--ink2); padding:5px 12px 5px 8px; border-radius:99px; background:var(--surface); box-shadow:inset 0 0 0 1px var(--line); white-space:nowrap; max-width:46vw}
 .presence .pa{display:flex}
 .presence .pa i{width:16px; height:16px; margin-right:-4px; border-radius:50%; border:2px solid var(--surface); background:var(--cc)}
@@ -487,7 +488,7 @@ html.nogl #stage, html.nogl #scrim, html.nogl .cap, html.nogl #over{display:none
 
 <a class="skip" href="#story">Skip to content</a>
 <header class="top">
-  <a class="brand" href="#hero" data-go="hero"><i aria-hidden="true"></i><span>hil.agent</span></a>
+  <a class="brand" href="#hero" data-go="hero"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><rect class="k0" width="64" height="64" rx="15"/><rect class="k1" x="6" y="5" width="52" height="49" rx="11"/><path class="gl" d="M22 17v26M22 32q0-7 10-7t10 7v11"/><circle class="hd" cx="22" cy="17" r="5"/><circle class="nd" cx="22" cy="43" r="4.2"/><circle class="nd" cx="42" cy="43" r="4.2"/></svg><span>hil.agent</span></a>
   <span class="presence" id="presence" title="Four agents work on this page: planner, scout, verifier and scribe">
     <span class="pa"><i data-a="planner"></i><i data-a="scout"></i><i data-a="verifier"></i><i data-a="scribe"></i></span>
     <span id="presT">4 agents · idle</span>
@@ -1778,8 +1779,6 @@ const M = {
 const ringCol = c => new THREE.Color(c === 'ok' ? P.ringO : c === 'mute' ? P.ringM : P.ringA);
 const C = { agent:new THREE.Color(P.agent), amber:new THREE.Color(P.human), ok:new THREE.Color(P.ok), trace:new THREE.Color(P.trace), led:new THREE.Color(P.led), amb:new THREE.Color(P.packetAmb), mute:new THREE.Color(P.muted) };
 const FT = .1, HD = 1.5;
-/* each graph floats above its board: parts, wires and packets ride a layer LIFT above the slab */
-const LIFT = .62;
 
 /* every canvas texture remembers how to draw itself, so a theme change repaints it */
 const jobs = [];
@@ -2018,7 +2017,7 @@ function buildPart(B, m, i){
     const blob = new THREE.Mesh(new THREE.PlaneGeometry(o.w*1.3 + .3, o.d*1.3 + .3), new THREE.MeshBasicMaterial({ map:shadowBlob, transparent:true, opacity:.14, depthWrite:false }));
     blob.rotation.x = -Math.PI/2; blob.position.y = .004; g.add(blob); o.blob = blob;
     if(o.body){ o.body.userData.o = o; pick.push(o.body); }
-    (B.lay || B.g).add(g);
+    B.g.add(g);
   }
   if(T === 'io') o.title = (m.tg === 'MCP' ? 'MCP server · ' : '') + m.s;
   if(T === 'ghost') o.title = m.n + ' (planned)';
@@ -2127,7 +2126,7 @@ function edgeLabel(B, w, text, t){
     x.fillStyle = P.ink2; x.font = `500 ${LFS*LPU}px ${MONO}`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, W/2, H*.54);
   }), transparent:true, opacity:0, depthWrite:false, polygonOffset:true, polygonOffsetFactor:-3, polygonOffsetUnits:-3 });
   const p = new THREE.Mesh(new THREE.PlaneGeometry(lw, h), mat); p.rotation.x = -Math.PI/2;
-  const [x, z] = at(w, w.len*t); p.position.set(x, FT + .012, z); p.renderOrder = 2; B.lay.add(p);
+  const [x, z] = at(w, w.len*t); p.position.set(x, FT + .012, z); p.renderOrder = 2; B.g.add(p);
   return mat;
 }
 const arrowGeo = (() => { const s = new THREE.Shape(); s.moveTo(0, 0); s.lineTo(-.3, .14); s.lineTo(-.3, -.14); s.closePath(); const g = new THREE.ShapeGeometry(s); g.rotateX(-Math.PI/2); return g; })();
@@ -2142,9 +2141,9 @@ function addWire(B, aId, bId, opt){
   P = cutEnd(P, .28);
   const cum = cumOf(full);
   const mat = new THREE.MeshBasicMaterial({ color:C.trace.clone(), transparent:true, opacity:0, depthWrite:false, side:THREE.DoubleSide });
-  const mesh = new THREE.Mesh(opt.dash ? ribbonN(dashes(P, .22, .16), .036) : ribbon(P, .04), mat); mesh.position.y = FT + .004; mesh.renderOrder = 1; B.lay.add(mesh);
-  const ar = new THREE.Mesh(arrowGeo, mat); ar.position.set(end[0], FT + .005, end[1]); ar.rotation.y = -Math.atan2(end[1] - pre[1], end[0] - pre[0]); B.lay.add(ar);
-  const pt = new THREE.Mesh(portGeo, mat); pt.position.set(full[0][0], FT + .005, full[0][1]); B.lay.add(pt);
+  const mesh = new THREE.Mesh(opt.dash ? ribbonN(dashes(P, .22, .16), .036) : ribbon(P, .04), mat); mesh.position.y = FT + .004; mesh.renderOrder = 1; B.g.add(mesh);
+  const ar = new THREE.Mesh(arrowGeo, mat); ar.position.set(end[0], FT + .005, end[1]); ar.rotation.y = -Math.atan2(end[1] - pre[1], end[0] - pre[0]); B.g.add(ar);
+  const pt = new THREE.Mesh(portGeo, mat); pt.position.set(full[0][0], FT + .005, full[0][1]); B.g.add(pt);
   const w = { a:aId, b:bId, P:full, cum, len:cum[cum.length - 1], mat, heat:0, col:C.agent, l:opt.l || '' };
   if(opt.l) w.lab = edgeLabel(B, w, opt.l, opt.lt ?? .5);
   B.wires.push(w);
@@ -2228,7 +2227,6 @@ HK.setLoad(.5);
 function makeBoard(b){
   const B = { b, g:new THREE.Group(), mods:{}, list:[], wires:[], boot:-1, running:false, amb:0 };
   B.g.position.set(b.px, 0, b.pz); scene.add(B.g); boards[b.id] = B;
-  B.lay = new THREE.Group(); B.lay.position.y = LIFT; B.g.add(B.lay);
   b.mods.forEach((m, i) => { const o = buildPart(B, m, i); B.mods[m.id] = o; B.list.push(o); });
   { const M = .5; let ax = 0, z0 = Infinity, z1 = -Infinity;
     for(const o of B.list){ ax = Math.max(ax, Math.abs(o.m.x) + o.w/2); z0 = Math.min(z0, o.m.z - o.d/2); z1 = Math.max(z1, o.m.z + o.d/2); }
@@ -2250,7 +2248,7 @@ for(const b of HK.BOARDS){ makeBoard(b); await sleep(0); }
 HK.setLoad(.75);
 
 const trB = { b:{ id:'traj', px:0, pz:0, w:0, d:0, title:'journey' }, g:new THREE.Group(), mods:{}, list:[], wires:[], boot:0, running:false, amb:0, traj:true };
-scene.add(trB.g); boards.traj = trB; trB.lay = trB.g;
+scene.add(trB.g); boards.traj = trB;
 function trPart(m){ const o = buildPart(trB, m, trB.list.length); trB.mods[m.id] = o; trB.list.push(o); return o; }
 const yrJobs = [];
 TR.st.forEach((s, i) => {
@@ -2374,7 +2372,7 @@ function stepPackets(dt){
     if(p.s < 0 || n >= MAXP) continue;
     const [x, z, a] = at(p.w, p.rev ? p.w.len - p.s : p.s);
     const base = p.B ? p.B.g.position : null;
-    dummy.position.set((base ? base.x : 0) + x, (p.B ? FT + .05 + p.B.lay.position.y : .05), (base ? base.z : 0) + z);
+    dummy.position.set((base ? base.x : 0) + x, (p.B ? FT + .05 : .05), (base ? base.z : 0) + z);
     dummy.rotation.set(0, -a, 0); dummy.updateMatrix();
     pk.setMatrixAt(n, dummy.matrix); pk.setColorAt(n, p.col); n++;
     if(p.msg){ V.copy(dummy.position).project(cam); p.msg.el.classList.add('on'); p.msg.el.style.transform = `translate(${(V.x + 1)/2*W}px, ${(1 - V.y)/2*H}px) translate(-50%, -150%)`; }
@@ -2399,7 +2397,7 @@ const API = {
   display(id, k, s){ const o = boards[id]?.mods[k]; if(o?.draw) o.draw(s); },
   where(id, k){
     const B = boards[id], o = B?.mods[k]; if(!o) return null;
-    V.set(B.g.position.x + o.g.position.x, o.g.position.y + o.h + B.lay.position.y, B.g.position.z + o.g.position.z).project(cam);
+    V.set(B.g.position.x + o.g.position.x, o.g.position.y + o.h, B.g.position.z + o.g.position.z).project(cam);
     return { x:(V.x + 1)/2*W, y:(1 - V.y)/2*H, on:V.z < 1 && Math.abs(V.x) < 1.05 && Math.abs(V.y) < 1.05 };
   },
   send(id, a, b, kind, label){
@@ -2442,14 +2440,14 @@ function fitBox(cx, cz, w, d, hy, yaw = YAW, el = EL){
     const p = new THREE.Vector3(sx*w/2, y, sz*d/2); ex = Math.max(ex, Math.abs(p.dot(BASIS.r))); ey = Math.max(ey, Math.abs(p.dot(BASIS.u)));
   }
   const [x0, x1, y0, y1] = region(), th = Math.tan(FOV/2*Math.PI/180), asp = W/H;
-  const dist = Math.max(ey/(th*(y1 - y0)), ex/(th*asp*(x1 - x0)))*1.15;
+  const dist = Math.max(ey/(th*(y1 - y0)), ex/(th*asp*(x1 - x0)))*1.12;
   return { tgt, dist, cx:(x0 + x1)/2, cy:(y0 + y1)/2, yaw, el };
 }
 const ANG = { hero:[24, 44], mdt:[-16, 46], openenv:[18, 45], hospital:[-16, 46], ectd:[18, 45], crohn:[-9, 47], _:[12, 48] };
 function resolve(v){
   if(v.traj != null){ const s = TR.views[v.traj]; return fitBox(s.cx, s.cz, s.w, s.d, .6, s.yaw*D2R, s.el*D2R); }
   const B = boards[v.b], b = B.b, f = v.f || [0, -HD/2, b.w, b.d + HD], a = ANG[b.id] || ANG._;
-  return fitBox(b.px + f[0], b.pz + f[1], f[2], f[3], (b.sealed ? 1 : .55) + LIFT, a[0]*D2R, a[1]*D2R);
+  return fitBox(b.px + f[0], b.pz + f[1], f[2], f[3], b.sealed ? 1 : .55, a[0]*D2R, a[1]*D2R);
 }
 function goal(){
   if(HK.override) return resolve(HK.override);
@@ -2476,8 +2474,7 @@ function stepCam(dt){
   const k = 1 - Math.exp(-dt*(HK.RM ? 40 : 3.6));
   cur.tgt.lerp(g.tgt, k); cur.dist += (g.dist - cur.dist)*k; cur.cx += (g.cx - cur.cx)*k; cur.cy += (g.cy - cur.cy)*k; cur.yaw += (g.yaw - cur.yaw)*k; cur.el += (g.el - cur.el)*k;
   const km = 1 - Math.exp(-dt*2.5); mouse.sx += (mouse.x - mouse.sx)*km; mouse.sy += (mouse.y - mouse.sy)*km;
-  const drift = HK.RM ? 0 : Math.sin(now()/6000)*.035;
-  const d = dirOf(cur.yaw + drift + (HK.RM ? 0 : mouse.sx*.09), cur.el + (HK.RM ? 0 : mouse.sy*.05));
+  const d = dirOf(cur.yaw + (HK.RM ? 0 : mouse.sx*.045), cur.el + (HK.RM ? 0 : mouse.sy*.025));
   cam.position.copy(cur.tgt).addScaledVector(d, cur.dist); cam.lookAt(cur.tgt);
   cam.setViewOffset(W, H, -(cur.cx - .5)*W, -(cur.cy - .5)*H, W, H);
   cam.updateMatrixWorld();
@@ -2527,7 +2524,6 @@ function stepParts(dt, t){
     B.g.visible = !far || B.traj;
     if(far && !B.traj) continue;
     const bt = B.traj ? 9 : (B.boot < 0 ? -1 : (t - B.boot)/1000);
-    if(!B.traj) B.lay.position.y = LIFT + (HK.RM ? 0 : Math.sin(t/1500 + B.b.pz*.1)*.05);
     for(const w of B.wires){
       w.heat = Math.max(0, w.heat - dt/1.6);
       w.mat.opacity = bt < 0 ? 0 : clamp((bt - .35)/.6);
@@ -2541,12 +2537,12 @@ function stepParts(dt, t){
       o.flash = Math.max(0, (o.flash || 0) - dt*1.6);
       if(!B.traj || o.acq == null){
         const k = bt < 0 ? 0 : clamp((bt - o.i*.03)/.55);
-        if(!B.traj){ o.g.visible = k > 0; const e = 1 - (k >= 1 ? 1 : backOut(k)); o.g.position.y = FT + e*1.4 + o.hov*.32 + (HK.RM ? 0 : Math.sin(t/820 + o.i*1.7)*.06) + (o === tok.o ? .1 : 0);
-          if(o.blob){ const up = o.g.position.y + B.lay.position.y - FT; o.blob.position.y = .004 - up; o.blob.material.opacity = .26/(1 + up*.8); } }
+        if(!B.traj){ o.g.visible = k > 0; const e = 1 - (k >= 1 ? 1 : backOut(k)), pt = (t - o.pressT)/260;
+          o.g.position.y = FT + e*1.4 - (o.cap || pt < 0 || pt >= 1 ? 0 : Math.sin(Math.PI*pt)*.09) + (o === tok.o ? .1 : 0); }
         else o.g.position.y = FT + o.hov*.08 + (o === tok.o ? .1 : 0);
       }
       const lit = Math.max(o.act, o.flash || 0, o.wait*(.5 + .5*Math.sin(t/180)));
-      if(o.halo){ o.halo.material.color.copy(o.haloAmber || o.wait ? C.amber : C.agent); o.halo.material.opacity = (o.g.visible ? 1 : 0)*Math.min(1, lit*.95 + o.hov*.8 + (B.traj ? 0 : .22)); }
+      if(o.halo){ o.halo.material.color.copy(o.haloAmber || o.wait ? C.amber : C.agent); o.halo.material.opacity = (o.g.visible ? 1 : 0)*Math.min(1, lit*.95 + o.hov*.8); }
       if(o.led) o.led.material.color.copy(C.led).lerp(o.wait ? C.amber : C.agent, clamp(lit + o.think));
       if(o.ring){ o.ring.rotation.z -= dt*(.35 + (o.think + (B.b.id === 'hero' ? .25 : 0))*2.6); }
       if(o.btnMat) o.btnMat.emissiveIntensity = .04 + .5*Math.max(o.wait*(.5 + .5*Math.sin(t/160)), o.flash || 0);
@@ -2571,11 +2567,11 @@ function doHover(){
   if(!pending) return; const e = pending; pending = null;
   if(e.target !== canvas){ if(hovered){ hovered.hovT = 0; hovered = null; HK.tip(null); canvas.style.cursor = ''; } return; }
   const o = pickAt(e.clientX, e.clientY);
-  if(o !== hovered){ if(hovered) hovered.hovT = 0; hovered = o; if(o) o.hovT = 1; }
+  if(o !== hovered) hovered = o;
   if(o){ if(HK.inspecting()) HK.tip(null); else HK.tip({ title:o.title, info:o.info, hint:(o.m.f ? o.m.f + ' · ' : '') + 'click to inspect' }, e.clientX, e.clientY); canvas.style.cursor = 'pointer'; }
   else { HK.tip(null); canvas.style.cursor = ''; }
 }
-canvas.addEventListener('pointerleave', () => { if(hovered){ hovered.hovT = 0; hovered = null; } HK.tip(null); });
+canvas.addEventListener('pointerleave', () => { hovered = null; HK.tip(null); });
 /* what a part is, where it lives in the code, and what flows in and out of it */
 function describe(o){
   const B = o.B, id = o.m.id, nm = k => B.mods[k]?.title || k;
@@ -2589,7 +2585,7 @@ function describe(o){
 canvas.addEventListener('click', e => {
   const o = pickAt(e.clientX, e.clientY);
   if(!o){ HK.inspect(null); return; }
-  if(o.cap) API.press(o.B.b.id, o.m.id); else o.flash = 1;
+  API.press(o.B.b.id, o.m.id); o.flash = 1;
   HK.tip(null);
   HK.inspect(describe(o));
 });

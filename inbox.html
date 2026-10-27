@@ -7,108 +7,118 @@
 <title>Inbox · hil.agent</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,300..900&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
-<script>try { const t = localStorage.getItem('hk-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<script>try { const t = localStorage.getItem('hk-theme'); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <style>
-/* Hil's private inbox. Same tokens as the hil.agent site, so both themes match. */
+/* Hil's private inbox, in the hil.agent v0.6 look: same tokens, Geist, keycap buttons */
 :root{
-  --bg:#F2F3F7; --surface:#FFFFFF; --ink:#0E1120; --muted:#5B6077; --line:rgba(14,17,32,.13);
-  --a1:#4A2DFF; --a2:#D41C7C; --a3:#E98300; --onA:#FFFFFF; --err:#C4221C;
-  --display:"Anybody", "Arial Narrow", system-ui, sans-serif;
-  --sans:"Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --bg:#E6E8EB; --surface:#F8F9FA; --raised:#FFFFFF; --ink:#0F1217; --ink2:#363C46; --muted:#59606C; --line:#C8CDD5; --line2:#DCDFE4;
+  --agent:#2350F0; --agent-ink:#1A3EB8; --agent-weak:rgba(35,80,240,.09); --on-agent:#FFFFFF; --err:#C4221C; --shadow:rgba(15,18,23,.35);
+  --sans:"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono:"Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --ex:cubic-bezier(.16,1,.3,1);
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#0A0B13; --surface:#131525; --ink:#ECEEF8; --muted:#9398B2; --line:rgba(236,238,248,.13);
-  --a1:#8E7DFF; --a2:#FF4FA7; --a3:#FFB23E; --onA:#0A0B13; --err:#FF6B63; color-scheme:dark } }
+  --bg:#0C0F14; --surface:#151A21; --raised:#1B2129; --ink:#E9EDF3; --ink2:#B5BDC9; --muted:#8C95A3; --line:#2B323C; --line2:#222830;
+  --agent:#5B7FFF; --agent-ink:#9DB3FF; --agent-weak:rgba(91,127,255,.14); --err:#FF6B63; --shadow:rgba(0,0,0,.6); color-scheme:dark } }
 :root[data-theme="dark"]{
-  --bg:#0A0B13; --surface:#131525; --ink:#ECEEF8; --muted:#9398B2; --line:rgba(236,238,248,.13);
-  --a1:#8E7DFF; --a2:#FF4FA7; --a3:#FFB23E; --onA:#0A0B13; --err:#FF6B63; color-scheme:dark }
+  --bg:#0C0F14; --surface:#151A21; --raised:#1B2129; --ink:#E9EDF3; --ink2:#B5BDC9; --muted:#8C95A3; --line:#2B323C; --line2:#222830;
+  --agent:#5B7FFF; --agent-ink:#9DB3FF; --agent-weak:rgba(91,127,255,.14); --err:#FF6B63; --shadow:rgba(0,0,0,.6); color-scheme:dark }
 
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;
-  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
-.wrap{max-width:880px;margin:0 auto}
+body{margin:0; min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:15.5px; line-height:1.55;
+  background-image:radial-gradient(var(--line) 1px, transparent 1.2px); background-size:22px 22px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.wrap{max-width:860px; margin:0 auto}
 a{color:inherit}
 [hidden]{display:none !important}
-.lbl{font:500 12px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.grad{background:linear-gradient(90deg,var(--a1),var(--a2) 55%,var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent}
-:focus-visible{outline:2.5px solid var(--a1);outline-offset:3px;border-radius:6px}
+.lbl{font:500 12px/1.4 var(--mono); letter-spacing:.02em; color:var(--muted)}
+.grad{color:var(--agent-ink)}
+:focus-visible{outline:2px solid var(--agent); outline-offset:3px; border-radius:6px}
 
-.bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding-block:12px;
-  background:color-mix(in srgb, var(--bg) 88%, transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
-.logo{font:800 18px/1 var(--display);font-variation-settings:"wdth" 120;letter-spacing:-.01em;white-space:nowrap;text-decoration:none}
-.logo span{color:var(--a2)}
+.bar{position:sticky; top:0; z-index:30; display:flex; align-items:center; gap:10px; padding-block:14px;
+  background:color-mix(in srgb, var(--bg) 88%, transparent); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px)}
+.logo{display:inline-flex; align-items:center; gap:10px; font:600 14px/1 var(--mono); letter-spacing:-.01em; white-space:nowrap; text-decoration:none; color:var(--ink)}
+.mark{flex:none; width:24px; height:24px; transition:transform .12s var(--ex)}
+.mark .k0{fill:var(--ink)} .mark .k1{fill:color-mix(in srgb, var(--ink) 82%, var(--bg))} .mark .gl{fill:none; stroke:var(--bg); stroke-width:4.2; stroke-linecap:round; stroke-linejoin:round} .mark .nd{fill:var(--bg)} .mark .hd{fill:var(--agent)}
+.logo:active .mark{transform:translateY(1.5px)}
 .bar .sp{margin-left:auto}
 .bar .lbl{white-space:nowrap}
-.ib{font:600 13px/1 var(--mono);color:var(--ink);background:transparent;border:1.5px solid var(--ink);border-radius:999px;padding:8px 12px;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
-.ib:hover{background:var(--ink);color:var(--bg)}
-.ib.solid{background:var(--ink);color:var(--bg)}
-.ib.solid:hover{background:var(--a1);border-color:var(--a1);color:var(--onA)}
-.ib.quiet{border-color:var(--line)}
-.ib.danger:hover{background:var(--err);border-color:var(--err);color:#fff}
-.ib:disabled{opacity:.5;cursor:default}
 
-h1{font:900 clamp(48px,11vw,104px)/.9 var(--display);font-variation-settings:"wdth" 72;letter-spacing:-.03em;margin:28px 0 8px}
-.sub{color:var(--muted);margin:0 0 26px}
+/* keycap buttons: they sit on a lip and press down, like the journey's skill keys */
+.ib{font:500 12.5px/1 var(--mono); color:var(--ink); background:var(--raised); border:0; border-radius:9px; padding:9px 12px 10px; cursor:pointer; white-space:nowrap; text-decoration:none;
+  display:inline-flex; align-items:center; gap:6px; box-shadow:inset 0 0 0 1px var(--line), 0 2px 0 var(--line); transform:translateY(0); transition:transform .08s, box-shadow .08s, background .15s}
+.ib:active{transform:translateY(2px); box-shadow:inset 0 0 0 1px var(--line), 0 0 0 var(--line)}
+.ib.solid{background:var(--agent); color:var(--on-agent); box-shadow:0 2px 0 var(--agent-ink)}
+.ib.solid:active{box-shadow:0 0 0 var(--agent-ink)}
+.ib.danger:hover{color:var(--err)}
+.ib:disabled{opacity:.5; cursor:default; transform:none}
+
+h1{font:600 clamp(40px, 8vw, 72px)/1 var(--sans); letter-spacing:-.035em; margin:36px 0 10px; text-wrap:balance}
+h1 small{display:block; margin-bottom:12px; font:500 12.5px/1.4 var(--mono); letter-spacing:.01em; color:var(--muted)}
+h1 small b{color:var(--agent-ink); font-weight:600}
+.sub{color:var(--ink2); margin:0 0 26px; max-width:60ch}
 
 /* sign in */
-.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px}
+.card{background:var(--surface); border-radius:14px; padding:22px; box-shadow:0 0 0 1px var(--line), 0 16px 34px -24px var(--shadow)}
 .signin{max-width:420px}
-.field{display:grid;gap:6px;margin-bottom:14px}
-.field input{font:16px/1.3 var(--sans);color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;width:100%}
-.field input:focus{border-color:var(--a1);outline:none}
-.note{font:13px/1.45 var(--mono);color:var(--muted);margin-top:12px;min-height:1em}
+.field{display:grid; gap:6px; margin-bottom:14px}
+.field input{font:15px/1.3 var(--sans); color:var(--ink); background:var(--bg); border:0; box-shadow:inset 0 0 0 1px var(--line); border-radius:10px; padding:12px 14px; width:100%}
+.field input:focus{box-shadow:inset 0 0 0 1.5px var(--agent); outline:none}
+.note{font:12.5px/1.45 var(--mono); color:var(--muted); margin-top:12px; min-height:1em}
 .note.err{color:var(--err)}
 
 /* toolbar */
-.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px}
-.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
-.tabs button{font:500 13px/1 var(--mono);color:var(--muted);background:none;border:0;border-radius:999px;padding:8px 12px;cursor:pointer}
-.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
-.tabs b{font-weight:700;color:var(--a2);margin-left:4px}
-.tabs button[aria-pressed="true"] b{color:inherit}
-.tools input{font:14px/1.2 var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:9px 14px;min-width:0;flex:1 1 180px}
-.tools input:focus{border-color:var(--a1);outline:none}
+.tools{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:18px}
+.tabs{display:flex; gap:6px}
+.tabs button{font:500 12.5px/1 var(--mono); color:var(--ink2); background:var(--raised); border:0; border-radius:9px; padding:9px 12px 10px; cursor:pointer;
+  box-shadow:inset 0 0 0 1px var(--line), 0 2px 0 var(--line); transition:transform .08s, box-shadow .08s}
+.tabs button:active{transform:translateY(2px); box-shadow:inset 0 0 0 1px var(--line)}
+.tabs button[aria-pressed="true"]{color:var(--agent-ink); background:var(--agent-weak); box-shadow:inset 0 0 0 1px var(--agent); transform:translateY(2px)}
+.tabs b{font-weight:600; color:var(--agent-ink); margin-left:4px}
+.tools input{font:14px/1.2 var(--sans); color:var(--ink); background:var(--surface); border:0; box-shadow:inset 0 0 0 1px var(--line); border-radius:10px; padding:10px 14px; min-width:0; flex:1 1 180px}
+.tools input:focus{box-shadow:inset 0 0 0 1.5px var(--agent); outline:none}
 
-/* messages */
-.list{display:grid;gap:12px;padding-bottom:60px}
-.msg{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
-.msg.unread{border-color:color-mix(in srgb, var(--a1) 55%, var(--line))}
-.msg.unread::before{content:"";position:absolute;left:-1px;top:18px;bottom:18px;width:3px;border-radius:3px;background:linear-gradient(var(--a1),var(--a2))}
-.mh{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
-.who{font:780 22px/1.15 var(--display);font-variation-settings:"wdth" 90;margin:0}
-.from{font:13px/1.4 var(--mono);color:var(--a1);word-break:break-all}
-.when{margin-left:auto;font:12px/1.4 var(--mono);color:var(--muted);white-space:nowrap}
-.body{white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0 14px;font-size:16px}
-.msg:not(.open) .body{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-.more{font:500 12px/1 var(--mono);color:var(--muted);background:none;border:0;padding:0 0 12px;cursor:pointer;text-decoration:underline}
-.acts{display:flex;flex-wrap:wrap;gap:8px}
-.meta{font:11.5px/1.4 var(--mono);color:var(--muted);margin-top:12px}
-.empty{text-align:center;padding:60px 20px;color:var(--muted)}
-.empty b{display:block;font:900 56px/1 var(--display);font-variation-settings:"wdth" 70;margin-bottom:10px}
+/* messages: node-editor cards */
+.list{display:grid; gap:12px; padding-bottom:60px}
+.msg{position:relative; background:var(--surface); border-radius:14px; padding:18px 20px; box-shadow:0 0 0 1px var(--line), 0 14px 30px -24px var(--shadow)}
+.msg.unread{box-shadow:0 0 0 1.5px var(--agent), 0 14px 30px -24px var(--shadow)}
+.msg.unread::before{content:"new"; position:absolute; right:16px; top:-9px; font:600 11px/1 var(--mono); padding:4px 8px; border-radius:99px; background:var(--agent); color:var(--on-agent)}
+.mh{display:flex; flex-wrap:wrap; gap:4px 12px; align-items:baseline}
+.who{font:600 19px/1.2 var(--sans); letter-spacing:-.015em; margin:0}
+.from{font:12.5px/1.4 var(--mono); color:var(--agent-ink); word-break:break-all}
+.when{margin-left:auto; font:12px/1.4 var(--mono); color:var(--muted); white-space:nowrap}
+.body{white-space:pre-wrap; overflow-wrap:anywhere; margin:12px 0 14px; color:var(--ink2)}
+.msg:not(.open) .body{display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden}
+.more{font:500 12px/1 var(--mono); color:var(--muted); background:none; border:0; padding:0 0 12px; cursor:pointer; text-decoration:underline}
+.acts{display:flex; flex-wrap:wrap; gap:8px}
+.meta{font:11.5px/1.4 var(--mono); color:var(--muted); margin-top:12px}
+.empty{text-align:center; padding:60px 20px; color:var(--muted); font-family:var(--mono); font-size:13px}
+.empty b{display:block; font:600 40px/1 var(--mono); margin-bottom:12px}
 
-.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);z-index:60;
-  background:var(--ink);color:var(--bg);font:13px/1.4 var(--mono);padding:10px 16px;border-radius:999px;box-shadow:0 14px 30px -14px rgba(10,11,19,.6)}
+.toast{position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom, 0px)); transform:translateX(-50%); z-index:60;
+  background:var(--ink); color:var(--bg); font:12.5px/1.4 var(--mono); padding:10px 16px; border-radius:10px; box-shadow:0 14px 30px -14px var(--shadow)}
 
 @media (max-width:560px){
-  .when{margin-left:0;width:100%}
+  .when{margin-left:0; width:100%}
   .msg{padding:16px}
-  .acts .ib{flex:1 1 auto;justify-content:center}
+  .acts .ib{flex:1 1 auto; justify-content:center}
 }
+@media (prefers-reduced-motion:reduce){ *{transition:none !important} }
 </style>
 </head>
 <body>
 <header class="bar wrap">
-  <a class="logo" href="./">hil.agent</a>
+  <a class="logo" href="./"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><rect class="k0" width="64" height="64" rx="15"/><rect class="k1" x="6" y="5" width="52" height="49" rx="11"/><path class="gl" d="M22 17v26M22 32q0-7 10-7t10 7v11"/><circle class="hd" cx="22" cy="17" r="5"/><circle class="nd" cx="22" cy="43" r="4.2"/><circle class="nd" cx="42" cy="43" r="4.2"/></svg>hil.agent</a>
   <span class="lbl">/ inbox</span>
   <span class="sp"></span>
-  <button class="ib quiet" id="themeBtn" type="button" aria-label="Switch colour theme">◐</button>
+  <button class="ib quiet" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button>
   <button class="ib" id="outBtn" type="button" hidden>Sign out</button>
 </header>
 
 <main class="wrap">
-  <h1><span class="grad">inbox</span></h1>
+  <h1><small><b>~/inbox</b> · messages from the contact form</small>Inbox</h1>
   <p class="sub" id="sub">Messages people sent from the contact form. Only you can see them.</p>
 
   <section id="signin" hidden>

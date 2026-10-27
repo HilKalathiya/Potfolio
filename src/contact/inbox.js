@@ -102,7 +102,7 @@ function btn(label, cls, onClick){
 function render(){
   const unread = messages.filter(m => !m.archived && !m.is_read).length;
   $('#unread').textContent = unread ? ` ${unread}` : '';
-  document.title = `${unread ? `(${unread}) ` : ''}Inbox · hil·attention`;
+  document.title = `${unread ? `(${unread}) ` : ''}Inbox · hil.agent`;
   $('#sub').textContent = session && session.email ? `Signed in as ${session.email}. Only you can see these messages.` : 'Messages people sent from the contact form. Only you can see them.';
 
   const q = $('#q').value.trim().toLowerCase();
@@ -225,7 +225,7 @@ $('#themeBtn').addEventListener('click', () => {
   const root = document.documentElement;
   const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   root.dataset.theme = cur === 'dark' ? 'light' : 'dark';
-  try { localStorage.setItem('hil-attn-theme', root.dataset.theme); } catch (e) {}
+  try { localStorage.setItem('hk-theme', root.dataset.theme); } catch (e) {}
 });
 // New messages show up without a reload.
 setInterval(() => { if (session && !document.hidden) load(true); }, 60_000);
