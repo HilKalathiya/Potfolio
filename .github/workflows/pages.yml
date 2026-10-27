@@ -29,9 +29,6 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}/
-          VITE_CONTACT_ENDPOINT: ${{ vars.VITE_CONTACT_ENDPOINT }}
-          VITE_CONTACT_KEY: ${{ vars.VITE_CONTACT_KEY }}
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
