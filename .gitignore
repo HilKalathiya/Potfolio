@@ -3,3 +3,7 @@ dist
 .env
 .env.local
 docs
+
+# Private handoff notes for Claude. Never push.
+handoff/
+HANDOFF*
