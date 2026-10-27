@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hil Kalathiya · AI engineer</title>
+<meta name="description" content="Hil Kalathiya is an AI engineer who builds LangGraph agents, RAG systems and the evaluation around them. Final-year B.Tech ICT at PDEU.">
+<meta name="theme-color" content="#0A0B13" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2F3F7" media="(prefers-color-scheme: light)">
+<meta property="og:title" content="Hil Kalathiya · builds agents that show their work">
+<meta property="og:description" content="LangGraph agents, RAG systems and evaluation. Five systems, drawn as they really are.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('hil-attn-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,300..900&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="bar wrap">
+  <div class="logo">hil<span>·</span>attention</div>
+  <nav class="nav" aria-label="Sections"><a href="#prompt">prompt</a><a href="#sequence">sequence</a><a href="#heads">heads</a><a href="#output">output</a></nav>
+  <button class="ib" id="themeBtn" type="button" aria-label="Switch colour theme">◐</button>
+  <a class="ib solid" href="Hil_Kalathiya_Resume.pdf" download data-dl style="text-decoration:none">résumé ↓</a>
+</header>
+
+<main class="wrap" id="main">
+<section class="hero" id="prompt">
+  <div class="meta"><span class="lbl">prompt · 11 tokens · hover a token to see what it attends to</span></div>
+  <h1 class="sr">Hil Kalathiya builds agents that show their work.</h1>
+  <div class="tokens" id="tokens"><canvas id="arcs" aria-hidden="true"></canvas></div>
+  <div class="gen">
+    <div>
+      <div class="lbl">decoding · temperature 0.7</div>
+      <div class="genline" id="genline"><span class="caret"></span></div>
+      <p class="sub"><strong>Hil Kalathiya</strong> is a final-year B.Tech ICT student at PDEU and an AI engineer. He builds LangGraph agents, RAG systems and the evaluation around them, and he graduates in May 2027.</p>
+      <div class="cta"><a class="ib solid" href="#heads" style="text-decoration:none">See the five systems</a><a class="ib" href="Hil_Kalathiya_Resume.pdf" download data-dl style="text-decoration:none">Download résumé</a></div>
+    </div>
+    <div class="topk" aria-live="polite">
+      <h4><span class="lbl">next token · top 5</span><span class="lbl" id="stepN">step 1</span></h4>
+      <div id="topk"></div>
+      <div class="hint" id="pickNote">sampling…</div>
+    </div>
+  </div>
+</section>
+
+<section id="sequence">
+  <div class="sec-h">
+    <div class="lbl">sequence · 2023 → 2027</div>
+    <h2>Every step attends to the ones before it.</h2>
+    <p>Scroll through his path one position at a time. The arcs show which earlier steps each one draws on, and how much.</p>
+  </div>
+  <div class="seq" id="seq">
+    <div class="stage">
+      <div class="rail" id="rail"><canvas id="seqArcs" aria-hidden="true"></canvas><div class="track" id="track"></div></div>
+      <div class="detail" id="detail" aria-live="polite"></div>
+      <div class="prog" id="prog"></div>
+    </div>
+  </div>
+</section>
+
+<section id="heads">
+  <div class="sec-h">
+    <div class="lbl">five heads · one model</div>
+    <h2>Five systems, each looking at a different problem.</h2>
+    <p>Every project is drawn as the system it really is, with the file paths from its repo. Moving tokens show what flows along each edge. Click any box to inspect it.</p>
+  </div>
+  <div class="heads" id="headCards"></div>
+  <div id="projects"></div>
+</section>
+
+<section id="output">
+  <div class="sec-h">
+    <div class="lbl">output</div>
+    <h2>The output is one page long.</h2>
+  </div>
+  <div class="out">
+    <div class="paper"><img src="/resume-page.jpg" alt="Page one of Hil Kalathiya's résumé" width="1240" height="1754" loading="lazy" decoding="async"></div>
+    <div>
+      <p class="sub" style="margin-top:0">Education, the HNNOIX internship, projects, skills and awards on a single page. The phone number is left off.</p>
+      <div class="cta"><a class="ib solid" href="Hil_Kalathiya_Resume.pdf" download data-dl style="text-decoration:none">↓ Download résumé</a><a class="ib" href="Hil_Kalathiya_Resume.pdf" target="_blank" rel="noopener" style="text-decoration:none">Open the PDF ↗</a></div>
+
+    </div>
+  </div>
+  <div class="eos"><span class="grad">&lt;eos&gt;</span></div>
+  <div class="contact">
+    <img src="/hil.jpg" alt="Portrait of Hil Kalathiya" width="420" height="504">
+    <div>
+      <div class="lbl" style="margin-bottom:8px">your turn · write to Hil</div>
+      <a class="mail" id="mail" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=hilkalathiya59@gmail.com&amp;su=Hello%20Hil" target="_blank" rel="noopener" title="Write to Hil in Gmail">hilkalathiya59@gmail.com</a>
+      <div class="cta"><a class="ib solid" id="gmailBtn" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=hilkalathiya59@gmail.com&amp;su=Hello%20Hil" target="_blank" rel="noopener" style="text-decoration:none">Write in Gmail ↗</a><a class="ib" href="mailto:hilkalathiya59@gmail.com?subject=Hello%20Hil" style="text-decoration:none">Other mail app</a><button class="ib" type="button" id="copyMail">Copy email</button><a class="ib" href="https://github.com/HilKalathiya" target="_blank" rel="noopener" style="text-decoration:none">GitHub ↗</a><a class="ib" href="https://www.linkedin.com/in/hil-kalathiya-47679331b/" target="_blank" rel="noopener" style="text-decoration:none">LinkedIn ↗</a></div>
+
+    </div>
+  </div>
+
+  <div class="ask" id="message">
+    <div class="sec-h" style="padding-bottom:0">
+      <div class="lbl">prompt · your turn</div>
+      <h2>Leave Hil a message.</h2>
+      <p>Hiring, a project, or a question about one of the systems above. It goes straight to his inbox and he reads every one.</p>
+    </div>
+    <form class="cform" id="contactForm" novalidate>
+      <label><span class="lbl">name</span><input name="name" autocomplete="name" required maxlength="120" placeholder="Your name"></label>
+      <label><span class="lbl">email</span><input name="email" type="email" autocomplete="email" required maxlength="200" placeholder="you@company.com"></label>
+      <label class="full"><span class="lbl">message</span><textarea name="message" required maxlength="5000" rows="5" placeholder="What are you working on?"></textarea></label>
+      <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+      <div class="full crow"><button class="ib solid" type="submit">send ↵</button><span class="hint" id="tokCount">0 tokens</span></div>
+      <div class="full note" id="formNote" role="status" aria-live="polite"></div>
+    </form>
+  </div>
+</section>
+</main>
+<footer class="wrap">hil · attention © 2026 Hil Kalathiya. Open to AI/ML engineering roles and internships, 2026–27.</footer>
+
+<div id="insp" hidden role="dialog" aria-label="Inspector"><button class="x" type="button" aria-label="Close">×</button><h4></h4><div class="f"></div><p></p></div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
